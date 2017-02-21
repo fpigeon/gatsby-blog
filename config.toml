@@ -1,0 +1,13 @@
+siteTitle = "Blog by Frank Pigeon"
+siteDescr = "Frank Pigeon's Blog"
+siteAuthor = "Frank Pigeon"
+
+siteTwitterUrl = "#"
+siteGithubUrl = "#"
+siteEmailUrl = "#"
+siteRssUrl = "#"
+siteVkUrl = "#"
+
+googleAnalyticsId = ""
+
+linkPrefix = "/gatsby-starter-lumen"    
