@@ -1,12 +1,13 @@
 siteTitle = "Blog by Frank Pigeon"
-siteDescr = "Frank Pigeon's Blog"
+siteDescr = "Random Thoughts and Ramblings"
 siteAuthor = "Frank Pigeon"
 
-siteTwitterUrl = "#"
-siteGithubUrl = "#"
-siteEmailUrl = "#"
-siteRssUrl = "#"
-siteVkUrl = "#"
+siteTwitterUrl = "https://twitter.com/fpigeonjr"
+siteGithubUrl = "https://github.com/fpigeon"
+siteEmailUrl = "frank.pigeonjr@gmail.com"
+siteLinkedInUrl = "https://www.linkedin.com/in/frankpigeonjr"
+siteFacebookUrl = "http://www.facebook.com/frank.pigeon"
+siteInstagramUrl = "http://instagram.com/fpigeonjr"
 
 googleAnalyticsId = ""
 
