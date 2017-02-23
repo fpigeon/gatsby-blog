@@ -11,6 +11,10 @@
 Install this starter (assuming Gatsby is installed) by running from your CLI:
 `gatsby new lumen https://github.com/wpioneer/gatsby-starter-lumen`
 
+## Getting Started
+
+Pull down the repo and then run `yarn install`.
+
 ## Running in development
 `gatsby develop`
 
