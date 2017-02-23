@@ -1,5 +1,5 @@
 siteTitle = "Blog by Frank Pigeon"
-siteDescr = "Random Thoughts and Ramblings"
+siteDescr = "San Antonion, Web Developer, and Coffee Lover"
 siteAuthor = "Frank Pigeon"
 
 siteTwitterUrl = "https://twitter.com/fpigeonjr"
@@ -12,4 +12,4 @@ siteFacebookUrl = "http://www.facebook.com/frank.pigeon"
 
 googleAnalyticsId = "UA-53325305-1"
 
-linkPrefix = "/gatsby-starter-lumen"    
+linkPrefix = "/gatsby-starter-lumen"
