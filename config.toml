@@ -4,10 +4,11 @@ siteAuthor = "Frank Pigeon"
 
 siteTwitterUrl = "https://twitter.com/fpigeonjr"
 siteGithubUrl = "https://github.com/fpigeon"
-siteEmailUrl = "frank.pigeonjr@gmail.com"
+siteEmailUrl = "mailto:frank.pigeonjr@gmail.com"
 siteLinkedInUrl = "https://www.linkedin.com/in/frankpigeonjr"
-siteFacebookUrl = "http://www.facebook.com/frank.pigeon"
 siteInstagramUrl = "http://instagram.com/fpigeonjr"
+siteGooglePlusUrl = "https://www.google.com/+FrankPigeon"
+siteFacebookUrl = "http://www.facebook.com/frank.pigeon"
 
 googleAnalyticsId = ""
 

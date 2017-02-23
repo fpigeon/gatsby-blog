@@ -25,27 +25,41 @@ class SiteLinks extends React.Component {
                 </a>
               </li>
             )}
-            {config.siteVkUrl && (
+            {config.siteLinkedInUrl && (
               <li>
-                <a href={config.siteVkUrl}><i className="fa fa-vk" /></a>
+                <a href={config.siteLinkedInUrl}>
+                  <i className="fa fa-linkedin" />
+                </a>
+              </li>   
+            )}
+            {config.siteInstagramUrl && (
+              <li>
+                <a href={config.siteInstagramUrl}><i className="fa fa-instagram" /></a>
               </li>
             )}
           </ul>
           <ul>
             {config.siteEmailUrl && (
               <li>
-                <a href={config.siteEmailUrl}>
+                <a href={config.siteEmailUrl} >
                   <i className="fa fa-envelope-o" />
                 </a>
               </li>
             )}
-            {config.siteTelegramUrl && (
+            {config.siteFacebookUrl && (
               <li>
-                <a href={config.siteTelegramUrl}>
-                  <i className="fa fa-paper-plane" />
+                <a href={config.siteFacebookUrl}>
+                  <i className="fa fa-facebook" />
                 </a>
               </li>
-                )}
+            )}
+            {config.siteGooglePlusUrl && (
+              <li>
+                <a href={config.siteGooglePlusUrl}>
+                  <i className="fa fa-google-plus" />
+                </a>
+              </li>
+            )}
           </ul>
           <ul>
             {config.siteRssUrl && (
