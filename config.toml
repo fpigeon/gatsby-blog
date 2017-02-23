@@ -10,6 +10,6 @@ siteInstagramUrl = "http://instagram.com/fpigeonjr"
 siteGooglePlusUrl = "https://www.google.com/+FrankPigeon"
 siteFacebookUrl = "http://www.facebook.com/frank.pigeon"
 
-googleAnalyticsId = ""
+googleAnalyticsId = "UA-53325305-1"
 
 linkPrefix = "/gatsby-starter-lumen"    
