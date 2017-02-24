@@ -1,4 +1,4 @@
-# Lumen
+#My Lumen Blog
 
 [Gatsby](https://github.com/gatsbyjs/gatsby) starter for creating a blog.
 
