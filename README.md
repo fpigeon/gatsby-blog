@@ -18,6 +18,12 @@ Pull down the repo and then run `yarn install`.
 ## Running in development
 `gatsby develop`
 
+## Push to gh-pages
+`yarn deploy`
+
+## Clean public directory
+`yarn clean`
+
 ## Staging Site
 [https://fpigeon.github.io/gatsby-blog/](https://fpigeon.github.io/gatsby-blog/)
 
