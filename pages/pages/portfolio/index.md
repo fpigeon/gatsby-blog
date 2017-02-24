@@ -4,12 +4,68 @@ layout: page
 path: "/portfolio"
 ---
 
-Lorem ipsum dolor sit amet, in summo tamquam mea, gubergren laboramus torquatos usu ne, magna rationibus sit eu. Id constituam honestatis pri, iracundia adversarium vel te. Per ferri aliquam impedit ex. Ei nec elitr nonumy vidisse, et qui fierent maluisset sadipscing, tincidunt vituperata delicatissimi te quo.
+## Community Helpers
 
-Te est iisque volutpat, tacimates dissentias no ius. Ea eam quodsi omnium deseruisse, affert evertitur sententiae sea ei. Dicit minimum at quo, nulla ludus vivendum cu mea, audire reformidans mei id. In his deserunt tincidunt, cu stet soleat libris sit, et modus illum sea. Id usu ubique volumus deterruisset, mea ut viderer reformidans complectitur. Ignota meliore eu eam.
+![community helpers](./comm_helpers.jpg)
 
-Vix mazim ornatus in, populo causae mandamus cu mei, ut malis novum postulant duo. Pro tantas consulatu in, ei nullam labore detraxit sed. Ne nam wisi percipitur. Ea sint nonumy pri. Id mel graeco latine tacimates, eum no habeo laudem iriure, sea putent tritani accommodare id. Pro no rebum decore eripuit.
+Application that connects seniors (givers) that need work done around their home and the youth (helpers) that want to earn some extra money. Built using Laravel, PHP, MySQL, JavaScript, jQuery, and Twitter Bootstrap. Development done in a Vagrant environment. Version control using Git and GitHub. Features a helper/giver dashboard, a job listing for helpers to apply to, and giving the power to the giver to select a helper based on their jobs completed and reviews.
 
-Alia albucius pro ut. Mea ut ipsum dolor. Qui ea volumus blandit iudicabit, ad sed timeam nominati posidonium, mel ei meis ocurreret mnesarchum. Mei elitr senserit voluptatibus ad, te quod vivendo vix. Vis no perfecto abhorreant, cu appellantur repudiandae mei, at vix mnesarchum honestatis disputationi.
+[View Github][community-helpers-gh] <br>
+[View Live][community-helpers-live]
 
-Omnium utamur detraxit te pro, affert nominati has ea. Delectus platonem ius et. Cibo aperiam denique an duo, illud laudem constituam quo id. Inani civibus pertinacia nam an. Luptatum instructior sed at, an elit accommodare sit, vix ne nulla soluta.
+## Todo List 
+
+![todo list](./todo.jpg)
+
+The application was built using PHP, MySQL, HTML and CSS and it allows for adding new items, removing completed items, and uploading a todo list.
+
+[View Github][todo-gh]
+
+## Address Book
+
+![address book](./address.jpg)
+
+The application was built using PHP, MySQL, HTML and CSS and it allows for adding new addresses, removing completed addresses, and uploading an exisiting address book.
+
+[View Github][address-book-gh]
+
+## Whack-A-Mole
+
+![whack a mole](./whack_a_mole.jpg)
+
+First-person video game based on the classic whack-a-mole game. The game randomly has moles pop out of holes and the object of the game is to hit the moles and have them go back in their hole. The application features the ability to keep score, maintain a high-score, and a countdown timer. Written in PHP, JavaScript, and jQuery.
+
+[View Github][whack-a-mole-gh]
+
+## High Low game
+
+![code](./code.jpg)
+
+The game picks a random number between 1 and 100. It prompts the user to take a guess and outputs higher, lower, or good guess. Written in PHP.
+
+[View Github][highlow-gh]
+
+## Fizz Buzz
+
+![code](./code.jpg)
+
+The application prints the numbers from 1 to 100. But for multiples of three print “Fizz” instead of the number and for the multiples of five print “Buzz”. For numbers which are multiples of both three and five print “FizzBuzz”. Written in PHP.
+
+[View Github][fizzbuzz-gh]
+
+## CS Classwork
+
+![Regis CS Work](./regis.jpg)
+
+Check out my project exercises for the Computer Science courses I completed at Regis University. Written in C++.
+
+[View Github][cs-gh]
+
+[community-helpers-gh]: https://github.com/fpigeon/blog.dev
+[community-helpers-live]: http://community-helpers.com/
+[todo-gh]: https://github.com/fpigeon/Web_Todo_List
+[address-book-gh]: https://github.com/fpigeon/Codeup_Web_Exercises/blob/master/public/address_book.php
+[whack-a-mole-gh]: https://github.com/fpigeon/Codeup_Web_Exercises/blob/master/public/whack.html
+[highlow-gh]: https://github.com/fpigeon/High_Low
+[fizzbuzz-gh]: https://github.com/fpigeon/CodeUp_Exercises/blob/master/fizzbuzz.php
+[cs-gh]: https://github.com/fpigeon/Regis-University-CS-classwork
