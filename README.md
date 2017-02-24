@@ -19,7 +19,7 @@ Pull down the repo and then run `yarn install`.
 `gatsby develop`
 
 ## Push to gh-pages
-`yarn deploy`
+`yarn run deploy`
 
 ## Clean public directory
 `yarn run clean`
