@@ -4,6 +4,24 @@ layout: page
 path: "/portfolio"
 ---
 
+## David Portillo Tenor
+
+![david portillo tenor](./portillo.jpg)
+
+David Portillo tenor's website built with Jekyll.
+
+[View Github][david-portillo-gh]<br>
+[View Live][david-portillo-live]
+
+## Sean Dorr Portfolio
+
+![sean dorr](./seandorr.jpg)
+
+Sean Dorr's portfolio website built with Jekyll.
+
+[View Github][sean-dorr-gh]<br>
+[View Live][sean-dorr-live]
+
 ## Community Helpers
 
 ![community helpers](./comm_helpers.jpg)
@@ -61,6 +79,12 @@ Check out my project exercises for the Computer Science courses I completed at R
 
 [View Github][cs-gh]
 
+
+
+[david-portillo-gh]: https://github.com/davidportillo/tenorwebsite
+[david-portillo-live]: http://davidportillotenor.com/
+[sean-dorr-gh]: https://github.com/seandorr/designer-portfolio
+[sean-dorr-live]: http://seandorr.com/
 [community-helpers-gh]: https://github.com/fpigeon/blog.dev
 [community-helpers-live]: http://community-helpers.com/
 [todo-gh]: https://github.com/fpigeon/Web_Todo_List

@@ -42,32 +42,6 @@ path: "/resume"
 * IT Project Manager and IT Customer Support for Dept.of Army
 * Served as a 74B Computer Operator/Analyst in the U.S. Army
 
-<h2 class="section-h2">Projects</h2>
-
-<h4 class="projects-h4">[Community Helpers][community-helpers]</h4>
-
-<p class="project-p">
-    Application that connects seniors that need work done around their home and the youth that want to earn some extra money.
-</p>
-
-<h4 class="projects-h4">[React Blog][react-blog]</h4>
-
-<p class="project-p">
-    Application for writing and viewing blog posts as well as my portfolio, resume, and social media landing page.
-</p>
-
-<h4 class="projects-h4">[David Portillo Tenor][david-portillo]</h4>
-
-<p class="project-p">
-    David Portillo tenor's website built with Jekyll.
-</p>
-
-<h4 class="projects-h4">[Sean Dorr Portfolio][sean-dorr]</h4>
-
-<p class="project-p">
-    Sean Dorr's portfolio website built with Jekyll.
-</p>
-
 <h2 class="section-h2">Education</h2>
 
 #### Codeup
