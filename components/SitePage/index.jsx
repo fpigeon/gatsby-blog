@@ -5,7 +5,7 @@ import { prefixLink } from 'gatsby-helpers'
 import access from 'safe-access'
 import { config } from 'config'
 import SiteSidebar from '../SiteSidebar'
-import './style.css';
+import './style.sass';
 
 class SitePage extends React.Component {
     render() {
