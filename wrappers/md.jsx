@@ -2,6 +2,7 @@ import React from 'react'
 import Helmet from 'react-helmet'
 import SitePost from '../components/SitePost'
 import SitePage from '../components/SitePage'
+import SiteResume from '../components/SiteResume'
 import { config } from 'config'
 
 class MarkdownWrapper extends React.Component {
@@ -12,7 +13,9 @@ class MarkdownWrapper extends React.Component {
 
         layout = post.layout
 
-        if (layout != 'page') {
+        if ( layout == 'resume' ) {
+            template = <SiteResume {...this.props}/>
+        } else if ( layout != 'page' ) {
             template = <SitePost {...this.props}/>
         } else {
             template = <SitePage {...this.props}/>

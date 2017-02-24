@@ -32,6 +32,7 @@
     "history": "^2.1.2",
     "lodash": "^4.17.2",
     "moment": "^2.17.1",
+    "raw-loader": "^0.5.1",
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
     "react-ga": "^2.1.2",
@@ -39,7 +40,6 @@
     "react-router": "^2.6.1",
     "safe-access": "^0.1.0",
     "underscore.string": "^3.2.3",
-    "raw-loader": "^0.5.1",
     "url-loader": "^0.5.7"
   },
   "devDependencies": {
@@ -59,6 +59,7 @@
     "lost": "^8.0.0",
     "null-loader": "^0.1.1",
     "postcss-loader": "^1.2.2",
+    "react-icons": "^2.2.3",
     "react-transform-catch-errors": "^1.0.2",
     "react-transform-hmr": "^1.0.4",
     "redbox-react": "^1.3.0",

@@ -1,8 +1,9 @@
 ---
 title: "Resume"
-layout: page
+layout: resume
 path: "/resume"
 ---
+
 <div class="summary-box">
     <h3 class="summary-h3 text-center">Summary</h3>
     <p class="summary-p">
@@ -11,11 +12,11 @@ path: "/resume"
 </div>
 
 
-<h2 class="section-h2">WORK EXPERIENCE</h2>
+<h2 class="section-h2">Work Experience</h2>
 
 #### AUG 2015 - Present
 
-Web Developer, Dept. of Army - San Antonio, TX
+<p class="position">Web Developer, Dept. of Army - San Antonio, TX</p> 
 
 * Frontend web design and development for public facing websites and applications
 * Led adoption of version control, design guidelines, and modern web practices
@@ -24,14 +25,14 @@ Web Developer, Dept. of Army - San Antonio, TX
 
 #### NOV 2014 - AUG 2015
 
-Web Developer, AM Design - Ft. Worth, TX
+<p class="position">Web Developer, AM Design - Ft. Worth, TX</p>
 
 * Full stack web development using Linux, Apache, mySQL, and PHP
 * Part of the web development team for the Digital Agency
 
 #### MAY 2014 - Present
 
-Freelance Web Developer, Self - San Antonio, TX
+<p class="position">Freelance Web Developer, Self - San Antonio, TX</p>
 
 * Owner of [Pigeontec][pigeontec], a single person Digital Agency
 * Full stack web design and development
@@ -41,44 +42,53 @@ Freelance Web Developer, Self - San Antonio, TX
 * IT Project Manager and IT Customer Support for Dept.of Army
 * Served as a 74B Computer Operator/Analyst in the U.S. Army
 
-<h2 class="section-h2">PROJECTS</h2>
+<h2 class="section-h2">Projects</h2>
 
 <h4 class="projects-h4">[Community Helpers][community-helpers]</h4>
 
 <p class="project-p">
     Application that connects seniors that need work done around their home and the youth that want to earn some extra money.
 </p>
+
 <h4 class="projects-h4">[React Blog][react-blog]</h4>
+
 <p class="project-p">
     Application for writing and viewing blog posts as well as my portfolio, resume, and social media landing page.
 </p>
+
 <h4 class="projects-h4">[David Portillo Tenor][david-portillo]</h4>
+
 <p class="project-p">
     David Portillo tenor's website built with Jekyll.
 </p>
-<h4 class="projects-h4">[Sean Dorr][sean-dorr]</h4>
+
+<h4 class="projects-h4">[Sean Dorr Portfolio][sean-dorr]</h4>
+
 <p class="project-p">
     Sean Dorr's portfolio website built with Jekyll.
 </p>
 
-<h2 class="section-h2">EDUCATION</h2>
+<h2 class="section-h2">Education</h2>
 
 #### Codeup
-
-Full stack web development bootcamp using the LAMP stack
+<p class="project-p">
+    Full stack web development bootcamp using the LAMP stack
+</p>
 
 #### Regis University
-
-4 Computer Science Leveling Courses
+<p class="project-p">
+    4 Computer Science Leveling Courses
+</p>
 
 #### Park University
-
-B.S., Management, Computer Information Systems
+<p class="project-p">
+    B.S., Management, Computer Information Systems
+</p>
 
 #### Kansas City Kansas Community College
-
-A.A.S., Computer Information Systems
-
+<p class="project-p">
+    A.A.S., Computer Information Systems
+</p>
 
 [pigeontec]: http://pigeontec.com
 [community-helpers]: http://community-helpers.com/
