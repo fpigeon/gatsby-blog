@@ -4,10 +4,10 @@ layout: page
 path: "/resume"
 ---
 <div class="summary-box">
-    <h3 class="summary-h3 text-center">Summary</h3> 
+    <h3 class="summary-h3 text-center">Summary</h3>
     <p class="summary-p">
         With over 15 years of IT experience, I'm broadening my horizons into web and mobile development. I'm a U.S. Army veteran, hold a SECRET clearance, and have a Bachelor's Degree in Management, CIS. I am fluent in English and Spanish, a focused team player, a lifetime learner, and am excited to take on new challenges that combine my creativity and business sense.
-    </p>    
+    </p>
 </div>
 
 
@@ -43,22 +43,20 @@ Freelance Web Developer, Self - San Antonio, TX
 
 <h2 class="section-h2">PROJECTS</h2>
 
-#### [Community Helpers][community-helpers]
+<h4 class="projects-h4">[Community Helpers][community-helpers]</h4>
+
 <p class="project-p">
     Application that connects seniors that need work done around their home and the youth that want to earn some extra money.
 </p>
-
-#### [React Blog][react-blog]
+<h4 class="projects-h4">[React Blog][react-blog]</h4>
 <p class="project-p">
     Application for writing and viewing blog posts as well as my portfolio, resume, and social media landing page.
 </p>
-
-#### [David Portillo Tenor][david-portillo]
+<h4 class="projects-h4">[David Portillo Tenor][david-portillo]</h4>
 <p class="project-p">
     David Portillo tenor's website built with Jekyll.
 </p>
-
-#### [Sean Dorr][sean-dorr]
+<h4 class="projects-h4">[Sean Dorr][sean-dorr]</h4>
 <p class="project-p">
     Sean Dorr's portfolio website built with Jekyll.
 </p>
