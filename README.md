@@ -22,7 +22,7 @@ Pull down the repo and then run `yarn install`.
 `yarn deploy`
 
 ## Clean public directory
-`yarn clean`
+`yarn run clean`
 
 ## Staging Site
 [https://fpigeon.github.io/gatsby-blog/](https://fpigeon.github.io/gatsby-blog/)
