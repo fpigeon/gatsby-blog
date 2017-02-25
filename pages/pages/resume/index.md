@@ -12,11 +12,11 @@ path: "/resume"
 </div>
 
 
-<h2 class="section-h2">Work Experience</h2>
+<h2 class="section-h2"><i class="fa fa-briefcase"></i> Work Experience</h2>
 
 #### AUG 2015 - Present
 
-<p class="position">Web Developer, Dept. of Army - San Antonio, TX</p> 
+<p class="position">Web Developer, Dept. of Army - San Antonio, TX</p>
 
 * Frontend web design and development for public facing websites and applications
 * Led adoption of version control, design guidelines, and modern web practices
@@ -25,7 +25,7 @@ path: "/resume"
 
 #### NOV 2014 - AUG 2015
 
-<p class="position">Web Developer, AM Design - Ft. Worth, TX</p>
+<p class="position">Web Developer, AM Digital - Ft. Worth, TX</p>
 
 * Full stack web development using Linux, Apache, mySQL, and PHP
 * Part of the web development team for the Digital Agency
@@ -42,7 +42,7 @@ path: "/resume"
 * IT Project Manager and IT Customer Support for Dept.of Army
 * Served as a 74B Computer Operator/Analyst in the U.S. Army
 
-<h2 class="section-h2">Education</h2>
+<h2 class="section-h2"><i class="fa fa-graduation-cap"></i> Education</h2>
 
 #### Codeup
 <p class="project-p">
