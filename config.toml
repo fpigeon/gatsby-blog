@@ -13,4 +13,4 @@ siteFacebookUrl = "http://www.facebook.com/frank.pigeon"
 googleAnalyticsId = "UA-53325305-1"
 
 # linkPrefix = "/gatsby-blog" //staging
-linkPrefix = "/"
+linkPrefix = "/frankpigeon.com"
