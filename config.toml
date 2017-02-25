@@ -8,9 +8,8 @@ siteEmailUrl = "mailto:frank.pigeonjr@gmail.com"
 siteLinkedInUrl = "https://www.linkedin.com/in/frankpigeonjr"
 siteInstagramUrl = "http://instagram.com/fpigeonjr"
 siteGooglePlusUrl = "https://www.google.com/+FrankPigeon"
-siteFacebookUrl = "http://www.facebook.com/frank.pigeon"
+siteFacebookUrl = "https://www.facebook.com/frank.pigeonjr"
 
 googleAnalyticsId = "UA-53325305-1"
 
-# linkPrefix = "/gatsby-blog" //staging
 linkPrefix = "/"
