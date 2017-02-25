@@ -8,7 +8,7 @@ path: "/portfolio"
 
 ![david portillo tenor](./portillo.jpg)
 
-David Portillo tenor's website built with Jekyll.
+Client work for opera singer David Portillo. Web Design and Development. Built with Jekyll.
 
 [View Github][david-portillo-gh]<br>
 [View Live][david-portillo-live]
@@ -17,7 +17,7 @@ David Portillo tenor's website built with Jekyll.
 
 ![sean dorr](./seandorr.jpg)
 
-Sean Dorr's portfolio website built with Jekyll.
+Client work for graphic artist and designer Sean Dorr's portfolio website. Web Design and Development. Built with Jekyll.
 
 [View Github][sean-dorr-gh]<br>
 [View Live][sean-dorr-live]
@@ -26,12 +26,12 @@ Sean Dorr's portfolio website built with Jekyll.
 
 ![community helpers](./comm_helpers.jpg)
 
-Application that connects seniors (givers) that need work done around their home and the youth (helpers) that want to earn some extra money. Built using Laravel, PHP, MySQL, JavaScript, jQuery, and Twitter Bootstrap. Development done in a Vagrant environment. Version control using Git and GitHub. Features a helper/giver dashboard, a job listing for helpers to apply to, and giving the power to the giver to select a helper based on their jobs completed and reviews.
+Web application that connects seniors that need work done around their home and the youth that want to earn some extra money. Built using Laravel, PHP, MySQL, JavaScript, jQuery, and Twitter Bootstrap. Development done in a Vagrant environment. Version control using Git and GitHub. Features a helper/giver dashboard, a job listing for helpers to apply to, and giving the power to the giver to select a helper based on their jobs completed and reviews.
 
 [View Github][community-helpers-gh] <br>
 [View Live][community-helpers-live]
 
-## Todo List 
+## Todo List
 
 ![todo list](./todo.jpg)
 

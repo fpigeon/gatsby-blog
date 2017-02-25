@@ -27,7 +27,7 @@ path: "/resume"
 
 <p class="position">Web Developer, AM Digital - Ft. Worth, TX</p>
 
-* Full stack web development using Linux, Apache, mySQL, and PHP
+* Full stack web development using Linux, Apache, MySQL, and PHP
 * Part of the web development team for the Digital Agency
 
 #### MAY 2014 - Present
