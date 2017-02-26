@@ -7,9 +7,10 @@ category: "Beginning Blogging"
 description: "Blog redesign using Gatsby."
 ---
 
+![code](./code.jpg)
+
 ## My First Post
 
-![code](./code.jpg)
 
 As a web developer when you are learning a new language the first thing we learn to do is output the string `hello world`.
 
