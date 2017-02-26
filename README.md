@@ -28,7 +28,7 @@ Pull down the repo and then run `yarn install`.
 [https://fpigeon.github.io/gatsby-blog/](https://fpigeon.github.io/gatsby-blog/)
 
 ## Live Site
-[frankpigeon.com](frankpigeon.com)
+[frankpigeon.com](http://frankpigeon.com)
 
 ![](http://i.imgur.com/422y5GV.png)
 
