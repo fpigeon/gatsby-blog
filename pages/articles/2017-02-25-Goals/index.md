@@ -2,9 +2,10 @@
 title: "Goals for 2017 "
 date: "2017-02-25"
 layout: post
-path: "/goals-for-2017s/"
+path: "/goals-for-2017/"
 category: "Goals Commitment Resources Roadmaps"
 description: "Blogging is fun when you have a goals. These are mine for 2017."
+readNext: "/postCSS/"
 ---
 
 ![coast](./coast.jpg)

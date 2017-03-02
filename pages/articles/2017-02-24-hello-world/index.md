@@ -5,6 +5,7 @@ layout: post
 path: "/hello-world/"
 category: "Beginning Blogging"
 description: "Blog redesign using Gatsby."
+readNext: "/goals-for-2017"
 ---
 
 ![code](./code.jpg)
