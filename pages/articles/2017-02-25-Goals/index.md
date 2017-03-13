@@ -33,7 +33,7 @@ Attend the local bootcamp at least twice a week.
 
 ### Professional
 
-* Learn React and full stack Javascript
+* Learn ~~React~~ Vue and full stack Javascript
 * Learn to deploy apps on Dokku
 
 ```js
