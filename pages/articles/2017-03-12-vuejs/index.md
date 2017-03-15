@@ -18,7 +18,7 @@ Having completed a couple tutorials, I was feeling pretty excited about React, i
 
 One of my concerns was am I investing in the right Javascript framework? How do you know you are picking the right one when you haven't experienced them all.
 
-<blockquote> My mentors told me that you just need to pick one and go with it.</blockquote>
+> My mentors told me that you just need to pick one and go with it.
 
 I was feeling a little fuzzy on my React training so launching this blog using React help solidy some of that knowledge.
 
@@ -36,7 +36,7 @@ There is no complicated setup. All you do is drop in one javascript tag and you 
 <script src="https://unpkg.com/vue"></script>
 ```
 
-Next you'll want to setup your template.
+Next, you'll want to setup your template.
 
 #### html
 
@@ -57,24 +57,24 @@ var app = new Vue({
 })
 ```
 
-Congrats you have just setup your first Vue app. We are telling Vue to connect to the id `app` and then we are passing in the data `message` using the moustache syntax `{{ message }}`.
+Congrats you have just setup your first Vue app. We are telling Vue to connect to the id `app` and then we are passing in the data `message` using the mustache syntax `{{ message }}`.
 
-Vue.js is simple to work with and just makes sense. There is clear sepration from your markup, your logic, and styling. Contrasting React's JSX, everything was jumbled up in there.
+Vue.js is simple to work with and just makes sense. There is a clear separation from your markup, your logic, and styling. Contrasting React's JSX, everything was jumbled up in there.
 
-Bonus: It doesn't hurt that you have one of the best teacher's with Jeffrey Way. I really recomend his free Vue.js 2 course entitled [Learn Vue 2: Step By Step][laracast-vue].
+Bonus: It doesn't hurt that you have one of the best teacher's with Jeffrey Way. I really recommend his free Vue.js 2 course entitled [Learn Vue 2: Step By Step][laracast-vue].
 
 
 After completing the course I was so excited to learn more about Vue that I started reading a book named [Learning Vue.js 2][book] by Olga Filipova.
 
 ![book](./book.png)
 
-This book was listed as one the resources from the [Awesome Vue][awesome-vue] github repo that has tons of Vue related resources.
+This book was listed as one the resources from the [Awesome Vue][awesome-vue] Github repo that has tons of Vue related resources.
 
 ## Changing Teams
 
 So now I have changed teams from React to Vue.
 
-My mentor says that either one you chose it will help you further your Javascript learning so these are inline with my professional goals.
+My mentor says that either one you chose it will help you further your Javascript learning so these are in line with my professional goals.
 
 ## Wrapping Up
 
