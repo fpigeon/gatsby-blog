@@ -9,7 +9,7 @@
 
 ## Installing
 
-Install this starter (assuming Gatsby is installed) by running from your CLI:
+Install this starter (assuming Gatsby is installed) by running from your CLI:<br>
 `gatsby new lumen https://github.com/wpioneer/gatsby-starter-lumen`
 
 ## Getting Started
