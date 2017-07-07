@@ -1,4 +1,4 @@
-#My Lumen Blog
+# My Lumen Blog
 
 [Gatsby](https://github.com/gatsbyjs/gatsby) starter for creating a blog.
 
@@ -8,6 +8,7 @@
 + Beautiful Typography ([matejlatin/Gutenberg](https://github.com/matejlatin/Gutenberg)).
 
 ## Installing
+
 Install this starter (assuming Gatsby is installed) by running from your CLI:
 `gatsby new lumen https://github.com/wpioneer/gatsby-starter-lumen`
 
