@@ -6,7 +6,7 @@ path: "/about"
 
 ![family](./family.jpg)
 
-My name is Frank Pigeon Jr. I am a father of three boys, husband to my [beautiful wife][kayFaceBook], and a web developer.
+My name is Frank Pigeon Jr. I am a father of three boys, husband to my [beautiful wife][kayTwitter], and a front end web developer.
 
 I was born in San Antonio, Texas and grew up in the tropical country of Panama.
 
@@ -16,5 +16,5 @@ I enjoy coding, photography, audio/video production, and all-things open-source.
 
 I am the owner of a freelance business [Pigeontec][pigeontec] which is a single person Digital Agency.
 
-[kayFaceBook]: https://www.facebook.com/kay.pigeon
+[kayTwitter]: https://twitter.com/kay_pigeon
 [pigeontec]: http://pigeontec.com

@@ -7,10 +7,9 @@ path: "/resume"
 <div class="summary-box">
     <h3 class="summary-h3 text-center">Summary</h3>
     <p class="summary-p">
-        With over 15 years of IT experience, I'm broadening my horizons into web and mobile development. I'm a U.S. Army veteran, hold a SECRET clearance, and have a Bachelor's Degree in Management, CIS. I am fluent in English and Spanish, a focused team player, a lifetime learner, and am excited to take on new challenges that combine my creativity and business sense.
+        With over 15 years of IT experience, I'm broadening my horizons into web and mobile development. I'm a U.S. Army veteran, hold a SECRET clearance, and have a Bachelor's Degree in Management, Computer Information Systems. I am fluent in English and Spanish, a focused team player, a lifetime learner, and am excited to take on new challenges that combine my creativity and business sense.
     </p>
 </div>
-
 
 <h2 class="section-h2"><i class="fa fa-briefcase"></i> Work Experience</h2>
 
@@ -20,15 +19,14 @@ path: "/resume"
 
 * Frontend web design and development for public facing websites and applications
 * Led adoption of version control, design guidelines, and modern web practices
-* Frontend design and development using HTML, CSS, Javascript, and the Adobe CC Suite
-
+* Frontend design and development using HTML, CSS, Javascript, React, and the Adobe CC Suite
 
 #### NOV 2014 - AUG 2015
 
 <p class="position">Web Developer, AM Digital - Ft. Worth, TX</p>
 
 * Full stack web development using Linux, Apache, MySQL, and PHP
-* Part of the web development team for the Digital Agency
+* Part of the web development team for the [AM Digital Agency][amwebsite]
 
 #### MAY 2014 - Present
 
@@ -45,21 +43,25 @@ path: "/resume"
 <h2 class="section-h2"><i class="fa fa-graduation-cap"></i> Education</h2>
 
 #### Codeup
+
 <p class="project-p">
     Full stack web development bootcamp using the LAMP stack
 </p>
 
 #### Regis University
+
 <p class="project-p">
     4 Computer Science Leveling Courses
 </p>
 
 #### Park University
+
 <p class="project-p">
     B.S., Management, Computer Information Systems
 </p>
 
 #### Kansas City Kansas Community College
+
 <p class="project-p">
     A.A.S., Computer Information Systems
 </p>
@@ -69,3 +71,4 @@ path: "/resume"
 [react-blog]: http://frankpigeon.com
 [david-portillo]: http://davidportillotenor.com/
 [sean-dorr]: http://seandorr.com/
+[amwebsite]: http://am.digital/

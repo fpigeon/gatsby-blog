@@ -4,22 +4,31 @@ layout: page
 path: "/portfolio"
 ---
 
+## Catch of the Day
+
+![cotd](./cotd.png)
+
+Real-time web application for a fictional trendy seafood market where price and quantity available can change at a moment's notice. Includes a build a menu, an order form, and an inventory management area where authorized users can immediately update product details. Built with React, ES6, React Router 4, and Firebase.
+
+[View Live][cotd] <br>
+[View Github][cotd-gh]
+
 ## David Portillo Tenor
 
 ![david portillo tenor](./portillo.jpg)
 
-Client work for opera singer David Portillo. Web Design and Development. Built with Jekyll.
+Client work for opera singer David Portillo. Web Design and development that includes a calendar of upcoming perfomances, media gallery, acclaims, and biography pages. Built with Jekyll and hosted on Github.
 
-[View Github][david-portillo-gh]<br>
+[View Github][david-portillo-gh] <br>
 [View Live][david-portillo-live]
 
 ## Sean Dorr Portfolio
 
 ![sean dorr](./seandorr.jpg)
 
-Client work for graphic artist and designer Sean Dorr's portfolio website. Web Design and Development. Built with Jekyll.
+Client work for graphic artist and designer Sean Dorr's portfolio website. Web Design and Development. Built with Jekyll and hosted on Github.
 
-[View Github][sean-dorr-gh]<br>
+[View Github][sean-dorr-gh] <br>
 [View Live][sean-dorr-live]
 
 ## Community Helpers
@@ -79,8 +88,8 @@ Check out my project exercises for the Computer Science courses I completed at R
 
 [View Github][cs-gh]
 
-
-
+[cotd-gh]: https://github.com/fpigeonjr/reactForBeginners
+[cotd]: catch-of-the-day.pigeontec.com
 [david-portillo-gh]: https://github.com/davidportillo/tenorwebsite
 [david-portillo-live]: http://davidportillotenor.com/
 [sean-dorr-gh]: https://github.com/seandorr/designer-portfolio
