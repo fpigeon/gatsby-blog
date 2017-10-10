@@ -89,7 +89,7 @@ Check out my project exercises for the Computer Science courses I completed at R
 [View Github][cs-gh]
 
 [cotd-gh]: https://github.com/fpigeonjr/reactForBeginners
-[cotd]: catch-of-the-day.pigeontec.com
+[cotd]: http://catch-of-the-day.pigeontec.com
 [david-portillo-gh]: https://github.com/davidportillo/tenorwebsite
 [david-portillo-live]: http://davidportillotenor.com/
 [sean-dorr-gh]: https://github.com/seandorr/designer-portfolio
