@@ -20,7 +20,7 @@ For my terminal, I have stuck with [iTerm2][iterm2]. It is reliable, customizabl
 
 Bought my first macintosh due to it being a requirement for my [coding bootcamp][codeup]. It is a [2012 15" retina macbook pro][mac] sitting ontop of a [Rain Laptop Stand][rain-stand]. This has been my workhorse ever since I started coding and really enjoy working on mac. It is the closest we can get to linux but still having access to apps like Adobe's Creative Cloud.
 
-I recently sold my dual monitor setup with a single [Dell UltraSharp U2515H 25-Inch Monitor][dell-monitor] after reading [A Single Monitor Manifesto][manifesto] by [Cory House][cory-house]. It made a lot sense to me and am happy with the new setup. This new setup helps me stay focused on the task at hand and avoid distractions.
+I recently sold my dual monitor setup and replaced it with a single [Dell UltraSharp U2515H 25-Inch Monitor][dell-monitor] after reading [A Single Monitor Manifesto][manifesto] by [Cory House][cory-house]. It made a lot sense to me and am happy with the new setup. This new setup helps me stay focused on the task at hand and avoid distractions.
 
 I own a [Logitech HD Laptop Webcam C615][webcam] for webchats and music recordings.
 
