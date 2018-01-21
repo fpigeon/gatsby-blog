@@ -19,7 +19,7 @@ path: "/resume"
 
 * Frontend web design and development for public facing websites and applications
 * Led adoption of version control, design guidelines, and modern web practices
-* Frontend design and development using HTML, CSS, Javascript, React, and the Adobe CC Suite
+* Frontend design and development using HTML, CSS, JavaScript, React, and the Adobe CC Suite
 
 #### NOV 2014 - AUG 2015
 
