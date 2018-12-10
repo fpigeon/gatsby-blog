@@ -71,19 +71,19 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createRoutes2 = _interopRequireDefault(_createRoutes);
 
-	var _html = __webpack_require__(606);
+	var _html = __webpack_require__(607);
 
 	var _html2 = _interopRequireDefault(_html);
 
 	var _config = __webpack_require__(370);
 
-	var _gatsbySsr = __webpack_require__(608);
+	var _gatsbySsr = __webpack_require__(609);
 
 	var _gatsbyHelpers = __webpack_require__(369);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var loadContext = __webpack_require__(609);
+	var loadContext = __webpack_require__(610);
 
 	var routes = void 0;
 	loadContext(function (pagesReq) {
@@ -22301,179 +22301,48 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	'use strict';
 	var strictUriEncode = __webpack_require__(193);
-	var objectAssign = __webpack_require__(3);
-
-	function encoderForArrayFormat(opts) {
-		switch (opts.arrayFormat) {
-			case 'index':
-				return function (key, value, index) {
-					return value === null ? [
-						encode(key, opts),
-						'[',
-						index,
-						']'
-					].join('') : [
-						encode(key, opts),
-						'[',
-						encode(index, opts),
-						']=',
-						encode(value, opts)
-					].join('');
-				};
-
-			case 'bracket':
-				return function (key, value) {
-					return value === null ? encode(key, opts) : [
-						encode(key, opts),
-						'[]=',
-						encode(value, opts)
-					].join('');
-				};
-
-			default:
-				return function (key, value) {
-					return value === null ? encode(key, opts) : [
-						encode(key, opts),
-						'=',
-						encode(value, opts)
-					].join('');
-				};
-		}
-	}
-
-	function parserForArrayFormat(opts) {
-		var result;
-
-		switch (opts.arrayFormat) {
-			case 'index':
-				return function (key, value, accumulator) {
-					result = /\[(\d*)\]$/.exec(key);
-
-					key = key.replace(/\[\d*\]$/, '');
-
-					if (!result) {
-						accumulator[key] = value;
-						return;
-					}
-
-					if (accumulator[key] === undefined) {
-						accumulator[key] = {};
-					}
-
-					accumulator[key][result[1]] = value;
-				};
-
-			case 'bracket':
-				return function (key, value, accumulator) {
-					result = /(\[\])$/.exec(key);
-					key = key.replace(/\[\]$/, '');
-
-					if (!result) {
-						accumulator[key] = value;
-						return;
-					} else if (accumulator[key] === undefined) {
-						accumulator[key] = [value];
-						return;
-					}
-
-					accumulator[key] = [].concat(accumulator[key], value);
-				};
-
-			default:
-				return function (key, value, accumulator) {
-					if (accumulator[key] === undefined) {
-						accumulator[key] = value;
-						return;
-					}
-
-					accumulator[key] = [].concat(accumulator[key], value);
-				};
-		}
-	}
-
-	function encode(value, opts) {
-		if (opts.encode) {
-			return opts.strict ? strictUriEncode(value) : encodeURIComponent(value);
-		}
-
-		return value;
-	}
-
-	function keysSorter(input) {
-		if (Array.isArray(input)) {
-			return input.sort();
-		} else if (typeof input === 'object') {
-			return keysSorter(Object.keys(input)).sort(function (a, b) {
-				return Number(a) - Number(b);
-			}).map(function (key) {
-				return input[key];
-			});
-		}
-
-		return input;
-	}
 
 	exports.extract = function (str) {
 		return str.split('?')[1] || '';
 	};
 
-	exports.parse = function (str, opts) {
-		opts = objectAssign({arrayFormat: 'none'}, opts);
-
-		var formatter = parserForArrayFormat(opts);
-
-		// Create an object with no prototype
-		// https://github.com/sindresorhus/query-string/issues/47
-		var ret = Object.create(null);
-
+	exports.parse = function (str) {
 		if (typeof str !== 'string') {
-			return ret;
+			return {};
 		}
 
 		str = str.trim().replace(/^(\?|#|&)/, '');
 
 		if (!str) {
-			return ret;
+			return {};
 		}
 
-		str.split('&').forEach(function (param) {
+		return str.split('&').reduce(function (ret, param) {
 			var parts = param.replace(/\+/g, ' ').split('=');
 			// Firefox (pre 40) decodes `%3D` to `=`
 			// https://github.com/sindresorhus/query-string/pull/37
 			var key = parts.shift();
 			var val = parts.length > 0 ? parts.join('=') : undefined;
 
+			key = decodeURIComponent(key);
+
 			// missing `=` should be `null`:
 			// http://w3.org/TR/2012/WD-url-20120524/#collect-url-parameters
 			val = val === undefined ? null : decodeURIComponent(val);
 
-			formatter(decodeURIComponent(key), val, ret);
-		});
-
-		return Object.keys(ret).sort().reduce(function (result, key) {
-			var val = ret[key];
-			if (Boolean(val) && typeof val === 'object' && !Array.isArray(val)) {
-				// Sort object keys, not values
-				result[key] = keysSorter(val);
+			if (!ret.hasOwnProperty(key)) {
+				ret[key] = val;
+			} else if (Array.isArray(ret[key])) {
+				ret[key].push(val);
 			} else {
-				result[key] = val;
+				ret[key] = [ret[key], val];
 			}
 
-			return result;
-		}, Object.create(null));
+			return ret;
+		}, {});
 	};
 
-	exports.stringify = function (obj, opts) {
-		var defaults = {
-			encode: true,
-			strict: true,
-			arrayFormat: 'none'
-		};
-
-		opts = objectAssign(defaults, opts);
-
-		var formatter = encoderForArrayFormat(opts);
-
+	exports.stringify = function (obj) {
 		return obj ? Object.keys(obj).sort().map(function (key) {
 			var val = obj[key];
 
@@ -22482,24 +22351,16 @@ return /******/ (function(modules) { // webpackBootstrap
 			}
 
 			if (val === null) {
-				return encode(key, opts);
+				return key;
 			}
 
 			if (Array.isArray(val)) {
-				var result = [];
-
-				val.slice().forEach(function (val2) {
-					if (val2 === undefined) {
-						return;
-					}
-
-					result.push(formatter(key, val2, result.length));
-				});
-
-				return result.join('&');
+				return val.slice().sort().map(function (val2) {
+					return strictUriEncode(key) + '=' + strictUriEncode(val2);
+				}).join('&');
 			}
 
-			return encode(key, opts) + '=' + encode(val, opts);
+			return strictUriEncode(key) + '=' + strictUriEncode(val);
 		}).filter(function (x) {
 			return x.length > 0;
 		}).join('&') : '';
@@ -30526,11 +30387,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _SitePost2 = _interopRequireDefault(_SitePost);
 
-	var _SitePage = __webpack_require__(594);
+	var _SitePage = __webpack_require__(595);
 
 	var _SitePage2 = _interopRequireDefault(_SitePage);
 
-	var _SiteResume = __webpack_require__(604);
+	var _SiteResume = __webpack_require__(605);
 
 	var _SiteResume2 = _interopRequireDefault(_SiteResume);
 
@@ -31418,9 +31279,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _ReadNext2 = _interopRequireDefault(_ReadNext);
 
-	__webpack_require__(592);
-
 	__webpack_require__(593);
+
+	__webpack_require__(594);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -48249,11 +48110,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _underscore = __webpack_require__(511);
 
-	var _find = __webpack_require__(584);
+	var _find = __webpack_require__(585);
 
 	var _find2 = _interopRequireDefault(_find);
 
-	__webpack_require__(591);
+	__webpack_require__(592);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -48399,27 +48260,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	s.rpad             = __webpack_require__(558);
 	s.lrpad            = __webpack_require__(559);
 	s.sprintf          = __webpack_require__(560);
-	s.vsprintf         = __webpack_require__(564);
-	s.toNumber         = __webpack_require__(565);
-	s.numberFormat     = __webpack_require__(566);
-	s.strRight         = __webpack_require__(567);
-	s.strRightBack     = __webpack_require__(568);
-	s.strLeft          = __webpack_require__(569);
-	s.strLeftBack      = __webpack_require__(570);
-	s.toSentence       = __webpack_require__(571);
-	s.toSentenceSerial = __webpack_require__(572);
-	s.slugify          = __webpack_require__(573);
-	s.surround         = __webpack_require__(574);
-	s.quote            = __webpack_require__(575);
-	s.unquote          = __webpack_require__(576);
-	s.repeat           = __webpack_require__(577);
-	s.naturalCmp       = __webpack_require__(578);
-	s.levenshtein      = __webpack_require__(579);
-	s.toBoolean        = __webpack_require__(580);
-	s.exports          = __webpack_require__(581);
+	s.vsprintf         = __webpack_require__(565);
+	s.toNumber         = __webpack_require__(566);
+	s.numberFormat     = __webpack_require__(567);
+	s.strRight         = __webpack_require__(568);
+	s.strRightBack     = __webpack_require__(569);
+	s.strLeft          = __webpack_require__(570);
+	s.strLeftBack      = __webpack_require__(571);
+	s.toSentence       = __webpack_require__(572);
+	s.toSentenceSerial = __webpack_require__(573);
+	s.slugify          = __webpack_require__(574);
+	s.surround         = __webpack_require__(575);
+	s.quote            = __webpack_require__(576);
+	s.unquote          = __webpack_require__(577);
+	s.repeat           = __webpack_require__(578);
+	s.naturalCmp       = __webpack_require__(579);
+	s.levenshtein      = __webpack_require__(580);
+	s.toBoolean        = __webpack_require__(581);
+	s.exports          = __webpack_require__(582);
 	s.escapeRegExp     = __webpack_require__(520);
-	s.wrap             = __webpack_require__(582);
-	s.map              = __webpack_require__(583);
+	s.wrap             = __webpack_require__(583);
+	s.map              = __webpack_require__(584);
 
 	// Aliases
 	s.strip     = s.trim;
@@ -49263,157 +49124,182 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 563 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	(function(window) {
+	var __WEBPACK_AMD_DEFINE_RESULT__;/* global window, exports, define */
+
+	!function() {
+	    'use strict'
+
 	    var re = {
 	        not_string: /[^s]/,
+	        not_bool: /[^t]/,
+	        not_type: /[^T]/,
+	        not_primitive: /[^v]/,
 	        number: /[diefg]/,
+	        numeric_arg: /[bcdiefguxX]/,
 	        json: /[j]/,
 	        not_json: /[^j]/,
 	        text: /^[^\x25]+/,
 	        modulo: /^\x25{2}/,
-	        placeholder: /^\x25(?:([1-9]\d*)\$|\(([^\)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijosuxX])/,
+	        placeholder: /^\x25(?:([1-9]\d*)\$|\(([^)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijostTuvxX])/,
 	        key: /^([a-z_][a-z_\d]*)/i,
 	        key_access: /^\.([a-z_][a-z_\d]*)/i,
 	        index_access: /^\[(\d+)\]/,
-	        sign: /^[\+\-]/
+	        sign: /^[+-]/
 	    }
 
-	    function sprintf() {
-	        var key = arguments[0], cache = sprintf.cache
-	        if (!(cache[key] && cache.hasOwnProperty(key))) {
-	            cache[key] = sprintf.parse(key)
-	        }
-	        return sprintf.format.call(null, cache[key], arguments)
+	    function sprintf(key) {
+	        // `arguments` is not an array, but should be fine for this call
+	        return sprintf_format(sprintf_parse(key), arguments)
 	    }
 
-	    sprintf.format = function(parse_tree, argv) {
-	        var cursor = 1, tree_length = parse_tree.length, node_type = "", arg, output = [], i, k, match, pad, pad_character, pad_length, is_positive = true, sign = ""
+	    function vsprintf(fmt, argv) {
+	        return sprintf.apply(null, [fmt].concat(argv || []))
+	    }
+
+	    function sprintf_format(parse_tree, argv) {
+	        var cursor = 1, tree_length = parse_tree.length, arg, output = '', i, k, ph, pad, pad_character, pad_length, is_positive, sign
 	        for (i = 0; i < tree_length; i++) {
-	            node_type = get_type(parse_tree[i])
-	            if (node_type === "string") {
-	                output[output.length] = parse_tree[i]
+	            if (typeof parse_tree[i] === 'string') {
+	                output += parse_tree[i]
 	            }
-	            else if (node_type === "array") {
-	                match = parse_tree[i] // convenience purposes only
-	                if (match[2]) { // keyword argument
+	            else if (typeof parse_tree[i] === 'object') {
+	                ph = parse_tree[i] // convenience purposes only
+	                if (ph.keys) { // keyword argument
 	                    arg = argv[cursor]
-	                    for (k = 0; k < match[2].length; k++) {
-	                        if (!arg.hasOwnProperty(match[2][k])) {
-	                            throw new Error(sprintf("[sprintf] property '%s' does not exist", match[2][k]))
+	                    for (k = 0; k < ph.keys.length; k++) {
+	                        if (arg == undefined) {
+	                            throw new Error(sprintf('[sprintf] Cannot access property "%s" of undefined value "%s"', ph.keys[k], ph.keys[k-1]))
 	                        }
-	                        arg = arg[match[2][k]]
+	                        arg = arg[ph.keys[k]]
 	                    }
 	                }
-	                else if (match[1]) { // positional argument (explicit)
-	                    arg = argv[match[1]]
+	                else if (ph.param_no) { // positional argument (explicit)
+	                    arg = argv[ph.param_no]
 	                }
 	                else { // positional argument (implicit)
 	                    arg = argv[cursor++]
 	                }
 
-	                if (get_type(arg) == "function") {
+	                if (re.not_type.test(ph.type) && re.not_primitive.test(ph.type) && arg instanceof Function) {
 	                    arg = arg()
 	                }
 
-	                if (re.not_string.test(match[8]) && re.not_json.test(match[8]) && (get_type(arg) != "number" && isNaN(arg))) {
-	                    throw new TypeError(sprintf("[sprintf] expecting number but found %s", get_type(arg)))
+	                if (re.numeric_arg.test(ph.type) && (typeof arg !== 'number' && isNaN(arg))) {
+	                    throw new TypeError(sprintf('[sprintf] expecting number but found %T', arg))
 	                }
 
-	                if (re.number.test(match[8])) {
+	                if (re.number.test(ph.type)) {
 	                    is_positive = arg >= 0
 	                }
 
-	                switch (match[8]) {
-	                    case "b":
-	                        arg = arg.toString(2)
-	                    break
-	                    case "c":
-	                        arg = String.fromCharCode(arg)
-	                    break
-	                    case "d":
-	                    case "i":
+	                switch (ph.type) {
+	                    case 'b':
+	                        arg = parseInt(arg, 10).toString(2)
+	                        break
+	                    case 'c':
+	                        arg = String.fromCharCode(parseInt(arg, 10))
+	                        break
+	                    case 'd':
+	                    case 'i':
 	                        arg = parseInt(arg, 10)
-	                    break
-	                    case "j":
-	                        arg = JSON.stringify(arg, null, match[6] ? parseInt(match[6]) : 0)
-	                    break
-	                    case "e":
-	                        arg = match[7] ? arg.toExponential(match[7]) : arg.toExponential()
-	                    break
-	                    case "f":
-	                        arg = match[7] ? parseFloat(arg).toFixed(match[7]) : parseFloat(arg)
-	                    break
-	                    case "g":
-	                        arg = match[7] ? parseFloat(arg).toPrecision(match[7]) : parseFloat(arg)
-	                    break
-	                    case "o":
-	                        arg = arg.toString(8)
-	                    break
-	                    case "s":
-	                        arg = ((arg = String(arg)) && match[7] ? arg.substring(0, match[7]) : arg)
-	                    break
-	                    case "u":
-	                        arg = arg >>> 0
-	                    break
-	                    case "x":
-	                        arg = arg.toString(16)
-	                    break
-	                    case "X":
-	                        arg = arg.toString(16).toUpperCase()
-	                    break
+	                        break
+	                    case 'j':
+	                        arg = JSON.stringify(arg, null, ph.width ? parseInt(ph.width) : 0)
+	                        break
+	                    case 'e':
+	                        arg = ph.precision ? parseFloat(arg).toExponential(ph.precision) : parseFloat(arg).toExponential()
+	                        break
+	                    case 'f':
+	                        arg = ph.precision ? parseFloat(arg).toFixed(ph.precision) : parseFloat(arg)
+	                        break
+	                    case 'g':
+	                        arg = ph.precision ? String(Number(arg.toPrecision(ph.precision))) : parseFloat(arg)
+	                        break
+	                    case 'o':
+	                        arg = (parseInt(arg, 10) >>> 0).toString(8)
+	                        break
+	                    case 's':
+	                        arg = String(arg)
+	                        arg = (ph.precision ? arg.substring(0, ph.precision) : arg)
+	                        break
+	                    case 't':
+	                        arg = String(!!arg)
+	                        arg = (ph.precision ? arg.substring(0, ph.precision) : arg)
+	                        break
+	                    case 'T':
+	                        arg = Object.prototype.toString.call(arg).slice(8, -1).toLowerCase()
+	                        arg = (ph.precision ? arg.substring(0, ph.precision) : arg)
+	                        break
+	                    case 'u':
+	                        arg = parseInt(arg, 10) >>> 0
+	                        break
+	                    case 'v':
+	                        arg = arg.valueOf()
+	                        arg = (ph.precision ? arg.substring(0, ph.precision) : arg)
+	                        break
+	                    case 'x':
+	                        arg = (parseInt(arg, 10) >>> 0).toString(16)
+	                        break
+	                    case 'X':
+	                        arg = (parseInt(arg, 10) >>> 0).toString(16).toUpperCase()
+	                        break
 	                }
-	                if (re.json.test(match[8])) {
-	                    output[output.length] = arg
+	                if (re.json.test(ph.type)) {
+	                    output += arg
 	                }
 	                else {
-	                    if (re.number.test(match[8]) && (!is_positive || match[3])) {
-	                        sign = is_positive ? "+" : "-"
-	                        arg = arg.toString().replace(re.sign, "")
+	                    if (re.number.test(ph.type) && (!is_positive || ph.sign)) {
+	                        sign = is_positive ? '+' : '-'
+	                        arg = arg.toString().replace(re.sign, '')
 	                    }
 	                    else {
-	                        sign = ""
+	                        sign = ''
 	                    }
-	                    pad_character = match[4] ? match[4] === "0" ? "0" : match[4].charAt(1) : " "
-	                    pad_length = match[6] - (sign + arg).length
-	                    pad = match[6] ? (pad_length > 0 ? str_repeat(pad_character, pad_length) : "") : ""
-	                    output[output.length] = match[5] ? sign + arg + pad : (pad_character === "0" ? sign + pad + arg : pad + sign + arg)
+	                    pad_character = ph.pad_char ? ph.pad_char === '0' ? '0' : ph.pad_char.charAt(1) : ' '
+	                    pad_length = ph.width - (sign + arg).length
+	                    pad = ph.width ? (pad_length > 0 ? pad_character.repeat(pad_length) : '') : ''
+	                    output += ph.align ? sign + arg + pad : (pad_character === '0' ? sign + pad + arg : pad + sign + arg)
 	                }
 	            }
 	        }
-	        return output.join("")
+	        return output
 	    }
 
-	    sprintf.cache = {}
+	    var sprintf_cache = Object.create(null)
 
-	    sprintf.parse = function(fmt) {
-	        var _fmt = fmt, match = [], parse_tree = [], arg_names = 0
+	    function sprintf_parse(fmt) {
+	        if (sprintf_cache[fmt]) {
+	            return sprintf_cache[fmt]
+	        }
+
+	        var _fmt = fmt, match, parse_tree = [], arg_names = 0
 	        while (_fmt) {
 	            if ((match = re.text.exec(_fmt)) !== null) {
-	                parse_tree[parse_tree.length] = match[0]
+	                parse_tree.push(match[0])
 	            }
 	            else if ((match = re.modulo.exec(_fmt)) !== null) {
-	                parse_tree[parse_tree.length] = "%"
+	                parse_tree.push('%')
 	            }
 	            else if ((match = re.placeholder.exec(_fmt)) !== null) {
 	                if (match[2]) {
 	                    arg_names |= 1
 	                    var field_list = [], replacement_field = match[2], field_match = []
 	                    if ((field_match = re.key.exec(replacement_field)) !== null) {
-	                        field_list[field_list.length] = field_match[1]
-	                        while ((replacement_field = replacement_field.substring(field_match[0].length)) !== "") {
+	                        field_list.push(field_match[1])
+	                        while ((replacement_field = replacement_field.substring(field_match[0].length)) !== '') {
 	                            if ((field_match = re.key_access.exec(replacement_field)) !== null) {
-	                                field_list[field_list.length] = field_match[1]
+	                                field_list.push(field_match[1])
 	                            }
 	                            else if ((field_match = re.index_access.exec(replacement_field)) !== null) {
-	                                field_list[field_list.length] = field_match[1]
+	                                field_list.push(field_match[1])
 	                            }
 	                            else {
-	                                throw new SyntaxError("[sprintf] failed to parse named argument key")
+	                                throw new SyntaxError('[sprintf] failed to parse named argument key')
 	                            }
 	                        }
 	                    }
 	                    else {
-	                        throw new SyntaxError("[sprintf] failed to parse named argument key")
+	                        throw new SyntaxError('[sprintf] failed to parse named argument key')
 	                    }
 	                    match[2] = field_list
 	                }
@@ -49421,60 +49307,65 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    arg_names |= 2
 	                }
 	                if (arg_names === 3) {
-	                    throw new Error("[sprintf] mixing positional and named placeholders is not (yet) supported")
+	                    throw new Error('[sprintf] mixing positional and named placeholders is not (yet) supported')
 	                }
-	                parse_tree[parse_tree.length] = match
+
+	                parse_tree.push(
+	                    {
+	                        placeholder: match[0],
+	                        param_no:    match[1],
+	                        keys:        match[2],
+	                        sign:        match[3],
+	                        pad_char:    match[4],
+	                        align:       match[5],
+	                        width:       match[6],
+	                        precision:   match[7],
+	                        type:        match[8]
+	                    }
+	                )
 	            }
 	            else {
-	                throw new SyntaxError("[sprintf] unexpected placeholder")
+	                throw new SyntaxError('[sprintf] unexpected placeholder')
 	            }
 	            _fmt = _fmt.substring(match[0].length)
 	        }
-	        return parse_tree
-	    }
-
-	    var vsprintf = function(fmt, argv, _argv) {
-	        _argv = (argv || []).slice(0)
-	        _argv.splice(0, 0, fmt)
-	        return sprintf.apply(null, _argv)
-	    }
-
-	    /**
-	     * helpers
-	     */
-	    function get_type(variable) {
-	        return Object.prototype.toString.call(variable).slice(8, -1).toLowerCase()
-	    }
-
-	    function str_repeat(input, multiplier) {
-	        return Array(multiplier + 1).join(input)
+	        return sprintf_cache[fmt] = parse_tree
 	    }
 
 	    /**
 	     * export to either browser or node.js
 	     */
+	    /* eslint-disable quote-props */
 	    if (true) {
-	        exports.sprintf = sprintf
-	        exports.vsprintf = vsprintf
+	        exports['sprintf'] = sprintf
+	        exports['vsprintf'] = vsprintf
 	    }
-	    else {
-	        window.sprintf = sprintf
-	        window.vsprintf = vsprintf
+	    if (typeof window !== 'undefined') {
+	        window['sprintf'] = sprintf
+	        window['vsprintf'] = vsprintf
 
-	        if (typeof define === "function" && define.amd) {
-	            define(function() {
+	        if ("function" === 'function' && __webpack_require__(564)['amd']) {
+	            !(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
 	                return {
-	                    sprintf: sprintf,
-	                    vsprintf: vsprintf
+	                    'sprintf': sprintf,
+	                    'vsprintf': vsprintf
 	                }
-	            })
+	            }.call(exports, __webpack_require__, exports, module), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__))
 	        }
 	    }
-	})(typeof window === "undefined" ? this : window);
+	    /* eslint-enable quote-props */
+	}(); // eslint-disable-line
 
 
 /***/ }),
 /* 564 */
+/***/ (function(module, exports) {
+
+	module.exports = function() { throw new Error("define cannot be used indirect"); };
+
+
+/***/ }),
+/* 565 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var deprecate = __webpack_require__(561);
@@ -49484,7 +49375,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 565 */
+/* 566 */
 /***/ (function(module, exports) {
 
 	module.exports = function toNumber(num, precision) {
@@ -49495,7 +49386,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 566 */
+/* 567 */
 /***/ (function(module, exports) {
 
 	module.exports = function numberFormat(number, dec, dsep, tsep) {
@@ -49513,7 +49404,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 567 */
+/* 568 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var makeString = __webpack_require__(513);
@@ -49527,7 +49418,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 568 */
+/* 569 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var makeString = __webpack_require__(513);
@@ -49541,7 +49432,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 569 */
+/* 570 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var makeString = __webpack_require__(513);
@@ -49555,7 +49446,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 570 */
+/* 571 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var makeString = __webpack_require__(513);
@@ -49569,7 +49460,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 571 */
+/* 572 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var rtrim = __webpack_require__(551);
@@ -49587,10 +49478,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 572 */
+/* 573 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var toSentence = __webpack_require__(571);
+	var toSentence = __webpack_require__(572);
 
 	module.exports = function toSentenceSerial(array, sep, lastSep) {
 	  return toSentence(array, sep, lastSep, true);
@@ -49598,7 +49489,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 573 */
+/* 574 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var trim = __webpack_require__(518);
@@ -49611,7 +49502,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 574 */
+/* 575 */
 /***/ (function(module, exports) {
 
 	module.exports = function surround(str, wrapper) {
@@ -49620,10 +49511,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 575 */
+/* 576 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var surround = __webpack_require__(574);
+	var surround = __webpack_require__(575);
 
 	module.exports = function quote(str, quoteChar) {
 	  return surround(str, quoteChar || '"');
@@ -49631,7 +49522,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 576 */
+/* 577 */
 /***/ (function(module, exports) {
 
 	module.exports = function unquote(str, quoteChar) {
@@ -49643,7 +49534,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 577 */
+/* 578 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var makeString = __webpack_require__(513);
@@ -49665,7 +49556,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 578 */
+/* 579 */
 /***/ (function(module, exports) {
 
 	module.exports = function naturalCmp(str1, str2) {
@@ -49700,7 +49591,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 579 */
+/* 580 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var makeString = __webpack_require__(513);
@@ -49758,7 +49649,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 580 */
+/* 581 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var trim = __webpack_require__(518);
@@ -49784,7 +49675,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 581 */
+/* 582 */
 /***/ (function(module, exports) {
 
 	module.exports = function() {
@@ -49800,7 +49691,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 582 */
+/* 583 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	// Wrap
@@ -49908,7 +49799,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 583 */
+/* 584 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var makeString = __webpack_require__(513);
@@ -49923,11 +49814,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 584 */
+/* 585 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var createFind = __webpack_require__(585),
-	    findIndex = __webpack_require__(586);
+	var createFind = __webpack_require__(586),
+	    findIndex = __webpack_require__(587);
 
 	/**
 	 * Iterates over elements of `collection`, returning the first element
@@ -49971,7 +49862,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 585 */
+/* 586 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var baseIteratee = __webpack_require__(266),
@@ -50002,12 +49893,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 586 */
+/* 587 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var baseFindIndex = __webpack_require__(587),
+	var baseFindIndex = __webpack_require__(588),
 	    baseIteratee = __webpack_require__(266),
-	    toInteger = __webpack_require__(588);
+	    toInteger = __webpack_require__(589);
 
 	/* Built-in method references for those with the same name as other `lodash` methods. */
 	var nativeMax = Math.max;
@@ -50063,7 +49954,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 587 */
+/* 588 */
 /***/ (function(module, exports) {
 
 	/**
@@ -50093,10 +49984,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 588 */
+/* 589 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var toFinite = __webpack_require__(589);
+	var toFinite = __webpack_require__(590);
 
 	/**
 	 * Converts `value` to an integer.
@@ -50135,10 +50026,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 589 */
+/* 590 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	var toNumber = __webpack_require__(590);
+	var toNumber = __webpack_require__(591);
 
 	/** Used as references for various `Number` constants. */
 	var INFINITY = 1 / 0,
@@ -50183,7 +50074,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 590 */
+/* 591 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var isObject = __webpack_require__(264),
@@ -50255,12 +50146,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ }),
-/* 591 */
-/***/ (function(module, exports) {
-
-	// empty (null-loader)
-
-/***/ }),
 /* 592 */
 /***/ (function(module, exports) {
 
@@ -50274,6 +50159,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ }),
 /* 594 */
+/***/ (function(module, exports) {
+
+	// empty (null-loader)
+
+/***/ }),
+/* 595 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -50302,11 +50193,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _config = __webpack_require__(370);
 
-	var _SiteSidebar = __webpack_require__(595);
+	var _SiteSidebar = __webpack_require__(596);
 
 	var _SiteSidebar2 = _interopRequireDefault(_SiteSidebar);
 
-	__webpack_require__(603);
+	__webpack_require__(604);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -50377,7 +50268,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ }),
-/* 595 */
+/* 596 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -50398,17 +50289,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _config = __webpack_require__(370);
 
-	var _SiteNav = __webpack_require__(596);
+	var _SiteNav = __webpack_require__(597);
 
 	var _SiteNav2 = _interopRequireDefault(_SiteNav);
 
-	var _SiteLinks = __webpack_require__(598);
+	var _SiteLinks = __webpack_require__(599);
 
 	var _SiteLinks2 = _interopRequireDefault(_SiteLinks);
 
-	__webpack_require__(601);
+	__webpack_require__(602);
 
-	var _photo = __webpack_require__(602);
+	var _photo = __webpack_require__(603);
 
 	var _photo2 = _interopRequireDefault(_photo);
 
@@ -50521,7 +50412,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ }),
-/* 596 */
+/* 597 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -50540,7 +50431,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _gatsbyHelpers = __webpack_require__(369);
 
-	__webpack_require__(597);
+	__webpack_require__(598);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -50640,13 +50531,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports["default"];
 
 /***/ }),
-/* 597 */
+/* 598 */
 /***/ (function(module, exports) {
 
 	// empty (null-loader)
 
 /***/ }),
-/* 598 */
+/* 599 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -50667,9 +50558,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _config = __webpack_require__(370);
 
-	__webpack_require__(599);
-
 	__webpack_require__(600);
+
+	__webpack_require__(601);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -50790,12 +50681,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ }),
-/* 599 */
-/***/ (function(module, exports) {
-
-	// empty (null-loader)
-
-/***/ }),
 /* 600 */
 /***/ (function(module, exports) {
 
@@ -50811,16 +50696,22 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 602 */
 /***/ (function(module, exports) {
 
-	module.exports = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wgARCADwAPADASIAAhEBAxEB/8QAGwAAAgIDAQAAAAAAAAAAAAAAAAECBgMEBQf/xAAbAQACAwEBAQAAAAAAAAAAAAAAAQIDBAUGB//aAAwDAQACEAMQAAAB9WAcUxAAkwBgJIZHnB01S+eL0QpHbDumOTJuLBiYAAAAAAIaCQAIBNAgAQGJ+eoz1HJ16LeArls12UWd2izl37z3Qtq9hfB7t1blFtMAAAAABMAAQAgEIYnqBWaphumXTPr43k05cJCMpSi0S4PejZDyz1CoQ3YvTnF31tpiAAAAAAABiEkIQ1U7X56jhehUq68/o5545VSIMUlJQHleMlXref8Ao9Cvo9P263ZN2NtANpsAAAAQmgQgSaGvN/R/OUzbjDm9Lkm5yhd/tUi2037nCstPZy5w6l+XPi7OvKJfaHe9+FtMG0MYgBgEWhAhAIQ1RbhWc+jBkzdfDtpUb1AVc7i2IWPkdrXcavmsU5Lmy6eN18m2cHe0VdZp7sbECkIBiYQaECEBEQ9av2Ws4N73OT0MurewYoJ4OZsVeUrNvVTqyhYtrTyRjniYbK8fV4linXtNHSwMATaAAEQABKSCKaCPG7PKz6Kl3qrY8PQ2tLUoaLjWdbcuq1evLELv9nzjeT9H0M/Nibtl4Vg2Y5NPTQwAGgBgjE0xCcWKLgIxSgKk4u1QcmzsYa/ZaNHdx7iy7K72sO/ZDJVrFQ50W3Wqdn1ZPRNqE9eWTjIYwAaAYA8UotIi4tRxuBFIBYfNPUOepeJbPSr9dlm6NGy123PLRc0Z97iKduZ+xUn0uT2mnZBtMGAMaYDQGJxSTxvE0oqJCSjjlHPrcfTnROm33mcX0PmWv6BwtmGt5O125wq9p7XWqv2ssii3J1PPNr0XkL3Kv9jL1tkiVaZkWORFp4YqJB4nicXi0q3t5Vh4OjHo8J9Tk5oSsWvtYPFfS9HT6mtJc3pYOhbDZ28eWBmS0rc9djjye0+ZvLgJQs/d87yY+r6VKk2Tn93pPHLP0NbHyeJr5Hd4vOh0uE4hoxJNAYsiJdferNh8z7V6vQ1+L6LT3sGeZvZI51GFb7FZ7vl1OL9D5CSAigTk8mKSXQ7VXnTfFIuzkWmwEDQDSkBCaULbVnq9s8t7mMttczs4pvj6MfL54ex+djC7O0MIgDJRYpShIigQwBNKQESQyIwIuSBbGFQncN6h9bhep6lUlDp8RMeznIYwGBEYCJIFJAv/xAAqEAACAgEDAwIHAQEBAAAAAAABAgADBAUREhAhMBNABhQgIiMxMjM0UP/aAAgBAQABBQL/AMnIzKKJdrY3OtXynW5jajj3kHf27uEXUNXYO9jO3UGYOo20HEyqshfaOwRdV1A3lU3NGnvZE0s7nTK4NOrj6WhmRp1iSm2zGt07UEyR7PXcvZcbGa44uIlY7Cb9jBN5+5qGEtqq9mNdpeYMqn2OVaKabrDdkYFfCofQOpmsY80G70sr2PxDbxpwl521D7fBlpzpH4r8Sz1Mf2HxIfy6UPvUzecpv13nMTkIxG2oDbI0Kzli+w+It/mtLXtl5fpQ6jYINUslGfzi3Q2zMyHEfLyAUzLjMTKs31Ze/wAOWfd7D4i/6tLH47McNdd8nVHuxiUImnjkLVHHL7N80K5Rm47QV1WDVU3xvhtDy9h8Rp30ofgyKrbI2nKJVgoDXiKDjpxlg7XUK8sw1aVYVJFOIKpnrvjaKTVTU4cebJbjVYPmasBeFSzYGcBG23rOw33h/e0E3lo5V0r+LD7N5sn/ACI2TG/zBnKO8NoE+fXkM5QtGQty1vN+jfqhpjL537jJBExX3m83hG8y6iaxRxZUR5g47VkCDpedq8Mcko/nz5HY49m1wnYSzKRJkagJbfygvIajOZJVqCtKrQ8EzW2q03/Cv+fPlxm45VbbpnW8K7r3Z0VotHI/Lhg2KwFtNiTTslw9J3TUm+zS629D2Bmr1Cu6m/iM61XXCxA0SpElu4Btcti8yGRSM6pKmxMv7Mu31LsVeNHsDNZqL0ersGYltNvg2aNXvPlQHT7ZfcqJl5JZqreJ0etr8oeY/Q68hrOGaXdpVaViZpWLmkxszucrdb7mlh70jk2jULVjeUw/TmVLZTqGEa2/R5GC0z1TFsMLmf1NGwfux/48pMJ679LnVRkIGmZhd3Rk6rK0djp+B3oXiGveopnUsVYEeIw/Qx2F2dsV5ZGQ8sWZGOGlmEImF3pwK5TQiSlYI36t7WY2XZVKtRRpXYj+E9WYLLcytRfkvbN++E33GMI4jLBtvVEWLFjnYWHdh0rsZDRqJlV9dg+owzIyUrl1z2noZQ/Gz9gxo43gQb1iLBBM5+NJg+gMRMXOeuU5VVgB36s20tza1l2Y7wn6sK7cMOjiDeJF6foZlvqWfWDK8ixZjZ8uzkWXZNlnhBKnHsFqER1nExQYgm0zX4V+IeSpzW1TC1Ak9OcNooh7DNt52e3x7Wqah1tG3XPyOI8Y81NrVNjZKW9MvIFSsxY+QeYEgrnP6bsXPl//xAAoEQABAwMDBAEFAQAAAAAAAAABAAIDBBEhBRIxEBMgMCIGFDJBYRX/2gAIAQMBAT8B8r+5sRK7CNOnRlvrhZfKsg1FWUjdp9UIs3pwuekwx6Rym/iv3yhwr4TuU8fH0xQ7huQwENqOBhNKLQinxDbf0UhwQhlBoTnWVwUWjpM74einftKY5PfZHe9dt4W8jlONlLJfHnfpBMmSBzsq4QUzw0J012+puSjuYU2oX3Sc8uXbs30FFwAuVBXRyTCNifGHBPpyOF2CmQ2UjbtX+uY5SyQKKsil/E+JNlVamyHDclT10s/PC06bs1DXJrgR0KCqpRFGXKV25xcgS3IVPq0seHZVNqUM38KBB4VTq0UeG5Km1Cab99QtF1LuN7b+elkV9QVdgIR4FQ1k0JuD5RyOjduatL1VtQ3a/lb1WVbYIy4qomM0hefE+bJHMN2qi10bbSrUK91U/wDnn//EACYRAAICAQMEAgIDAAAAAAAAAAABAgMRBBIwEyAhMQUQFEEiYXH/2gAIAQIBAT8B7s8rZKw6oryNifHdPAxsQiqWVwsufntpfkXBL0T9nskISIvDFwW27Xgm8syz/TBuYmQte7HBqV5GbiMcmMC+qY5nwXxyiaIQyeEbos2r9CKq9vnhurJQcUecjZUm2Rq88UvQsSRKkVAo7RT/AJY4Umy6iUK90iFjTI3L9nVRO4hPa8n4m+G6JOmcPa7cFOklLyyvTRgayrqVNDTXgX02Uw3ySRCO1YGslmihL0WaWcDDKtHKXsr00IfbPlNDtl1IiNxk+J0/nqPtnRCfvunBTWGa/QOl7o+jaafTytltRTUqoKK5JQUlhmp+Kec1mk0kdPH++/8A/8QALBAAAgECBAUEAgIDAAAAAAAAAAERAiEQEjFAAyAiMGETQVGRMnEjgTNQYv/aAAgBAQAGPwL/AFPXWj+Ph/Z+KI4nD+iE8r8ltvmqcIdHA+zNVhphqQ3NJNFV/jauqp2PT4bikspJdjU1LljpuJ6NEO1e09Gl/s8F1fnbShn6P+lrsqq37DfyxdnOkZavfZZPkQl2Wj9Mpr+VsaVPcZE6bFYQtcNC+PSas9yKxV/I6Nihks69T+Oh/RZFzQdi/CkivhZRVcMmCqr22NNawy0WOuWy1NRMMthdF6JIyM6GyodtS3fbQ1xCMNMIXO0JDXfZfldTGs1yWyz5YG9h4HydI3XYySa25GJ7Goa846jVJLx1g1weyn2wknD3f9F+HU/6I9Bn+Fkqmr6MrEQUtu2yVfszwQZnc/FFiJOoujPQhXKaCleNlKWhlZM4WZdk5l9Go7jvgnqlrs4Znp/HmgicEhWvtGqkOqnTl1x9StbWKnrhmosXp5IVJm4mE5c1HuRoSnOwlmXhr+xV1Oyx0wuaFlyVItdHUoOmpPuXcFnmImFg12mxvGaXBHER01Ls/LLvkTJ7Me75rM6upGsMtjctchWXP6b7Phdm1TI4pFNy7t2ZR530olc3hbiVoTTyZKdd1NJ8PDyS93KIauS+9//EACMQAQEBAAEDBQEBAQEAAAAAAAEAESEQMUEgMFFhcYFAkaH/2gAIAQEAAT8hPc22223/AELGcB+ICND5Ux4G7P8AUr8zSANQ/kP+ZoAO62c+EbKq923fDa7N+7F4xHPr6wIHy8j/ACnAAeZjke/3bmqi8UTuXDoHgmP54wawcV8T5iuRePmH/Ewd7MKpDuDADDi44laiIDG4qTYPUVFO8D/CgXZJl1gePzLq97Fsdo6WL2nmMWw4w++9MUs/orD6EHRliI6C38WxfPt1QepvwjtcJgIPzY+ejhlLI977L75Xdf39z3SvYfYbil4yI1lzOec2sx5VsAZClx9pfLwBCCxzA5yPmzJ2Epicfa230t/57SmHavKj8MsdMtGuUG2wYl8ISng/Vni+2WUCWB4L4Te0dH0Nvy3zc1vFJ8xqpPdtvDvVQcBx0B+aT3ZWh4flz+D4vzxsweTzale+/fwQCsY/1SJ8FI84X2CDkkQB9L87cexHhH8mQhjjLgnaPceg0YG7LgD7uSAFx9BGpeD7kWMLeaXiYCT3njuPfbxZPsh1eo1LiM7ubgfvoHPXnn8QMJzTvmfB/cX/ACcNrfqT41jlPYOj6HtA4GzOneciUNZrMyRE60/IovawjeLNHT8iuNS06C1l+4YI9gt6M9FhjxXsbbzg2yJsa5k/LKOeaYDhRxX9S4IEZgv6haJtqN8QHNYhb5Ij2B6syy2U5gBk4Is5yPqO4IZx/wAJcTl272DcxpY3ad8gwx2scNFgL8dB7B1ZmejkYecN+DLUN5Y8KBLszYMEvKP4gMGGYu6B+xu2NjnXuoAAdD2DqyllmJS3bInKQ42ws3IkBf8AsCG5acWLnXZFMtTJAB7yqcpyx7iylL1YlrxHDsFSdO8Ds2vZs2M0nMqu2smc+diAYI6nrOi9Y23o2yoHgQjoNzh/ExjH8lIMsb2gK37yzPInYh4TIMPqO9vaqwyH10PYehT0WFkwJsQzYfHt9x0uWL7Iy3nmCc6sDO86XbkBW2AODbgV9DZRvhdg222230KZitIfc25n1Na+iTw3eviNpcPaMOYjMN4hLh0B8IX2s3ZbaAr9jBu+44/ih9CyylcLv0kxUD46bz1l7wuz0iDoUzoxKFj6Q2f1CSxfpcaPwMHcGLYDqwtse/rpZI930Pa5HINXk7dBOOidRPNmy40bQCDl9Wzjw2PJfk+yQR383E4fCX1psRbEu8ONjIwTbO02Q7gDuy/+x6HodCV/faSAvHO55gfED4vosrGjcGMBvpeh0I6L6d9OQtPsWtv06EgtlOU8vqeh7LPYCt+kSH8emVHn2mL6vrfSXZ6csssssssstkYkTlPBnr6tnqzpno83/9oADAMBAAIAAwAAABAWUbALJFd2FmUEWVGo65HdayYa0U11n8UzF68RjXYSnl31A8KoSlUbfpuelHHs/wCJqOrd5HO/FNhhdtobLO2RhiwdVZhBIO5Sq23RTE1EzQyOqUBcDYryxBs330xITzH6TZL8xl0m5TvmFJYLNO3+8lsQX2adn50GhqlQIJGRXHo31jXrbLntyEYP5xHkVqyLgnzqMFMxWpxdHxYqttFm+pNlPG7z8AAgx//EACARAQEBAAIDAQADAQAAAAAAAAEAESExECBBYTBRcaH/2gAIAQMBAT8Q856NHr+E8hvgjXEh9u4989Dep5cRDsOerLwl/m+z5+3KyKwzYmRJf4T0igCFIY6ebDwJb2lUMfd9jwn5LeME6lvhTHDNdyOmWqPbbYWpBGdYOnUN5mckkRgt8PjbbYsV7tByHjAMI6rDMMAgAPdg5/sQY2mjjxa3VtJ9ljYbfRZbYIZ3dnKcM648QLZ8HqsvGhmtduTyGwW3axoRxCDml1S/kNtsuR9raSOKWf0iT63mBpZ/UbhzOf4SsfWc1xsfgXC7+DGcoxs3BwflsTyAG4dfsv0uUM5t098s+AvxCV4fLnePQYQmJD2w/wDYD1MnPjy+jDzsNtsTbEv7LPtruh0S+Nttkv/EAB4RAQACAgMBAQEAAAAAAAAAAAEAESExECBBUTCh/9oACAECAQE/EOtkpLl/lcAgkqZgTGQb1+LNAivMuODTJ+TYEvpKY1APIDHKTI63ynKVzZZoQZxAjuNV1AGprDuJfcC0iJhhlhtkgJVxhuVi/B6MuNxWieiKEXDZPO1cONRw4wHmUIsXAtqMldTglW5lpYTAYO6IGCZdN1hqo9DogyixoCYn0hiA0dHpUUoMxoGJciKIfOIlRIio+U4Ap94qVBOCeCEyYWxx91Ebbj+wSpdH90yrHhAFJiZjFjOrIluZfEmuLgVglQWMRhw7jxmIIWlyDBqB95Qdw6hMVR1QnYyklw/UJluedfJ3vhsdjK3Q/wAlQM+u/wD/xAAkEAEAAgICAgIDAQEBAAAAAAABABEhMRBBUWFxkYGxwaEg8f/aAAgBAQABPxARiMqJmO+Hi5cWMIWv7Pt5gPcIuHFSpUqVKlRlSswh8RuIxly4xYsCrsIwrPVtYvXqofqNAu+m4OBK3ufctITShcoAXVrmT51CDCZmeFplviF+J1NRhdcMtl+eLisWEYG9AjhHEnN/EaTdo2wSx8DLKKJagw/Erix9RV+puUephqF2wLqCweLlsqZlszG5mDidTuEZcuLLiClhNzERLMb9zGgrLgjENsLTZTccohHqJLasS1oGbI+GNtejFxwimPggwf8Ai5fDwf8ADGMWN1KSHPXqCjk2srtBlS4bEB4IXhWYo4ONhpu5XCxhtgSIQirtExqOKAAt2xfXBc1y8uoa4YxYsX3ANAqZ7qeY8XiDCBgrK8FGJbWYit9EtsYj2YlcEUAo5xK1aukeKKl6gNU4cwZc64vPDyajwsXMUWPUC809RMawgNZQhXKa1HWJ0VASiazF1LhyGVWIz4n9sIvYKe4MuY6g8Dw6hyXhu4jctHLDx8IKg7hgEBsRropE30weqE1NgIDhME6/cRFM4j1TDYSVdwg9FEIT4hwErgQvfDGKxWaxLQOiXDkFw6H0+INYvxUK4HmMmJ7g1LX1EpbMbqOVddRKpNlTNh80wjYhkQZpE5st+IQy8FueLrnbCGFjGLUakSklFI2AYNxt7utsWEJ4FicK+0V+4xAfRCHFeYBnroi5m6BUtyOj/kvRHFCn3Kq5TQEMRakXSrAQYS8Q1CXL4vhiIjVRSKRCZqLrBpD8R+2rCGjcr1MpHEzCd4dv/kO5jaw6sDxGXGae2IAHDV9RUOurFf5Hax7bqOcM4Fbi2qKugYJR4puoeZ7gkxCY4ohkjiOYsY1B3vAiwqVEe5UehHzDqUQ7KHsmoB8RgbEDCLgSWIyhNW7iL0HqBgvbFRCZKIDIOdTchTXDrg5IQ1idRjwauMYXZEtGDTEEt0szDVxLqMYVOuoCos1cpAs1HkghdysgphuKX1sxzvgvS4qKXrVntCrYZhwPN4lxEWXHFIp1BfLsjIU2EUxxWJBAShUxOTzLVNPtCSJb3mZim4sHs51FfGH/AFGGojuBYVN/cMS4a2xYl8EuXOocGWjdRJi4bUvyxLplYgQr1FQ3LcgV5mZB7IQAAbSNHZcJYkIwwxSv1dyh7XYGG0F5gWjMNMpUsQ4X/JmRuUeDg47hFfBYoopcCmo+ZBgLlx7suCFmwzHGVDBAAzYa6lLSbAmOEvQR/IXJQxYfyHFM8ZhHeaNH3UuyikTU36u0MYlZ14ArcIAH4iqXLJZBl8DwXMTKKDVQPMvgCeEhljaGAZWZgH1FCzaEHEzlKgWMuS+ISumjG5dk09ubic1jNkEiZAskYtqpXcJSAGph7AgkRL4xwalzcHiViVPlLXud8zbcDnMUk8ZkjwK9o4ZZYXCQ+GWpRZSA/g95jeWbfZ+5QhK+IETQ1eZbQ6LYgDUnTqKcWBpKmKCipRMGExUOc8YcXMJRLWWMt5gWAUYkYqrRqDuS2EFei4lh7co36gtzKVUrFjBiK1ht/kSqg6Ll2k+Y1woCpjOZXeZhqiEHjqpm4PJLrDCq4MEy8FkYC8MPs6WTL0bQ6JtjHTKNaF3LNWvMWZF9x9gPp1Fgtzu4dG5ivMVmQWkBEAYA4FTuKDL4HEuHmLFMuuLBLHMRERymRjepqJxvKwxEdiS+1HKNMa9aVWZcaElgvPxDksty3M4BFD8BiNMIwT6zIIFTO0xATLpVkvyxQcQ3Fgy5iGovcXuWNR5i1MEHCC1dRyAvKf1GxloLiLLEvZWH1Ey/VFAv0BCQMHRCb7kOWL6maiTEQCDqPDY6qFmSeqMLNtNEGmPTmBhhfAgi4tEWYGM3cRe4gLO1ULB6R4izKMSq/dDEWvC4xqFayHYbDMUFPmCQJ7GAwGP3DBqoGh1EXHKgJM27JcBuHXMCkriqT3MZai4C+eT8SwglTqG4kQjPuGFqBB2mrDXFCHAHATVxWULvsnjkcxJUIWMqbguYJTUoELjY1HjBFbMyYikVhI7x2zSo7ZfEgiPDUAv8KyQZcNrUGsT0xYl6WJaplWFIno0YG/HG/uMqi+VzBXERuO5lBbHWoKwjKUOG5fepe3aMrTZDUphRiepLWlVmIo6CbvUGnHGeH5hRuHFB9ROiDQtke6l0EEcuP4S8yTTBNqqsXxFszCtxfMau5nMqa4gQKCAaSJgk0hLrSErqVfE3hU70VErARFVcq4KIOZca4PAx+I+5lu6i5uEe4zMahEvisREgOSJQw5PMdoww8RHMK6RGgnYIkMAFy66we5scEufPB1wM374by6bi3w1Ki1wWYm5QRERgp3YYRC0ewYD5nXKbXqBiEpR1E3LncMTcIb5dQQYPEyXMJDESIRionGeCfMdHX4GKRK8t3EIktFQInBGbgVmPARnUENQ1DcuOipk5TEYdwL4MMZQ5DhqWHBAy0WI5jsxlWxK6O3hUCUSpU9okIqVKzDUn/9k="
+	// empty (null-loader)
 
 /***/ }),
 /* 603 */
 /***/ (function(module, exports) {
 
-	// empty (null-loader)
+	module.exports = "data:image/jpeg;base64,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"
 
 /***/ }),
 /* 604 */
+/***/ (function(module, exports) {
+
+	// empty (null-loader)
+
+/***/ }),
+/* 605 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -50849,11 +50740,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _config = __webpack_require__(370);
 
-	var _SiteSidebar = __webpack_require__(595);
+	var _SiteSidebar = __webpack_require__(596);
 
 	var _SiteSidebar2 = _interopRequireDefault(_SiteSidebar);
 
-	__webpack_require__(605);
+	__webpack_require__(606);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -50924,13 +50815,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ }),
-/* 605 */
+/* 606 */
 /***/ (function(module, exports) {
 
 	// empty (null-loader)
 
 /***/ }),
-/* 606 */
+/* 607 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -50971,7 +50862,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (true) {
 	      css = _react2.default.createElement("style", {
 	        dangerouslySetInnerHTML: {
-	          __html: __webpack_require__(607)
+	          __html: __webpack_require__(608)
 	        }
 	      });
 	    }
@@ -51006,19 +50897,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 
 /***/ }),
-/* 607 */
+/* 608 */
 /***/ (function(module, exports) {
 
 	module.exports = "@import url(https://fonts.googleapis.com/css?family=Bree+Serif);html{-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}body{margin:0}article,aside,cite,code,details,figcaption,figure,footer,header,hgroup,main,nav,section,small,summary{display:block}article,article ol,article ul,blockquote,body,div,figure,footer,header,input,nav,section{box-sizing:border-box}audio,canvas,progress,video{display:inline-block;vertical-align:baseline}audio:not([controls]){display:none;height:0}[hidden],template{display:none}a{background:transparent}a:active,a:hover{outline:0}abbr{letter-spacing:.1em}abbr[title]{border-bottom:1px dotted}b,strong{font-weight:700}dfn{font-style:italic}mark{background:#ff0;color:#000}small{font-size:70%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}em,i{line-height:0;position:relative;vertical-align:baseline}img{border:0}svg:not(:root){overflow:hidden}hr{box-sizing:content-box;height:0}pre{overflow:auto}code,kbd,pre,samp{font-family:monospace,monospace}table{border-collapse:collapse;border-spacing:0}td,th{padding:0}img{max-width:100%;display:block;margin:inherit auto}@media screen and (min-width:40em){.floatLeft{float:left}}@media screen and (min-width:40em){.floatCenter{margin-left:auto;margin-right:auto}}@media screen and (min-width:40em){.floatRight{float:right}}@media screen and (min-width:40em){body,html{margin:0;width:100%;max-width:none}}html{box-sizing:border-box;font-size:16px;font-size:100%;font-family:Roboto,Arial,sans-serif;color:#333;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}@media screen and (min-width:40em){html{font-size:18px;font-size:1.125rem}}*,:after,:before{box-sizing:inherit}body{margin:0}footer{display:block}body>footer{margin:0 auto;width:80%}header,main,section{display:block}a{background:transparent;text-decoration:none;transition:all .3s}a:active,a:hover{outline:0}a:active,a:hover{color:#222}article{display:block;margin:0 auto;width:80%}@media screen and (min-width:40em){article{max-width:945px;max-width:52.5rem}}audio{display:inline-block;vertical-align:baseline}audio:not([controls]){display:none;height:0}canvas{display:inline-block;vertical-align:baseline}pre{overflow:auto}code,kbd,pre,samp{font-family:monospace,monospace}code{padding:26px;padding:1.625rem;display:block}@media screen and (min-width:40em){code{padding:31px;padding:1.722222222222222rem}}details,figcaption,summary{display:block}figcaption{line-height:26px;line-height:1.625rem;color:#222;font-size:13px;font-size:.8125rem;font-style:italic;margin-bottom:0;text-align:center}@media screen and (min-width:40em){figcaption{line-height:31px;line-height:1.722222222222222rem;margin-bottom:0}}figure{display:block}@media screen and (min-width:40em){figure.floatLeft,figure.floatRight{max-width:315px;max-width:17.5rem;padding:0 31px;padding:0 1.722222222222222rem}}@media screen and (min-width:40em){figure.floatLeft blockquote,figure.floatRight blockquote{padding:0;text-align:left}}@media screen and (min-width:40em){figure.floatLeft blockquote p,figure.floatRight blockquote p{font-size:19.2px;font-size:1.2rem;line-height:31px;line-height:1.722222222222222rem}}h1{font-size:40px;font-size:2.5rem;line-height:52px;line-height:3.25rem;margin-top:104px;margin-top:6.5rem;margin-bottom:26px;margin-bottom:1.625rem}h2{font-size:27px;font-size:1.6875rem;line-height:39px;line-height:2.4375rem;margin-top:65px;margin-top:4.0625rem;margin-bottom:13px;margin-bottom:.8125rem}h3{font-size:22px;font-size:1.375rem;margin-top:52px;margin-top:3.25rem}h3,h4{line-height:26px;line-height:1.625rem;margin-bottom:13px;margin-bottom:.8125rem}h4{font-size:19.2px;font-size:1.2rem;margin-top:39px;margin-top:2.4375rem}h5,h6{font-size:16px;font-size:1rem;line-height:26px;line-height:1.625rem;margin-top:65px;margin-top:4.0625rem;margin-bottom:13px;margin-bottom:.8125rem}@media screen and (min-width:40em){h1{font-size:40px;font-size:2.5rem;line-height:62px;line-height:3.444444444444445rem;margin-top:124px;margin-top:6.888888888888889rem;margin-bottom:31px;margin-bottom:1.722222222222222rem}h2{font-size:27px;font-size:1.6875rem;line-height:46.5px;line-height:2.583333333333334rem;margin-top:77.5px;margin-top:4.305555555555556rem;margin-bottom:15.5px;margin-bottom:.861111111111111rem}h3{font-size:22px;font-size:1.375rem;margin-top:62px;margin-top:3.444444444444445rem}h3,h4{line-height:31px;line-height:1.722222222222222rem;margin-bottom:15.5px;margin-bottom:.861111111111111rem}h4{font-size:19.2px;font-size:1.2rem;margin-top:46.5px;margin-top:2.583333333333334rem}h5,h6{font-size:16px;font-size:1rem;line-height:31px;line-height:1.722222222222222rem;margin-top:77.5px;margin-top:4.305555555555556rem;margin-bottom:15.5px;margin-bottom:.861111111111111rem}}h1+h2{margin-top:26px;margin-top:1.625rem}@media screen and (min-width:40em){h1+h2{margin-top:31px;margin-top:1.722222222222222rem}}h2+h3,h3+h4,h4+h5{margin-top:13px;margin-top:.8125rem}@media screen and (min-width:40em){h2+h3,h3+h4,h4+h5{margin-top:15.5px;margin-top:.861111111111111rem}}h5+h6{margin-top:-13px;margin-top:-.8125rem}@media screen and (min-width:40em){h5+h6{margin-top:-15.5px;margin-top:-.861111111111111rem}}h6{font-style:italic;font-weight:400}hgroup,hr{display:block}hr{margin-top:52px;margin-bottom:52px;box-sizing:content-box;border:0;color:#222;height:26px;height:1.625rem;margin:3.25rem auto;background-size:100% 26px;background-size:100% 1.625rem;background-image:linear-gradient(180deg,transparent 1px,transparent 11px,#222 0,#222 15px,transparent 0,transparent 26px);width:100px}@media screen and (min-width:40em){hr{background-size:100% 31px;background-size:100% 1.722222222222222rem;background-image:linear-gradient(180deg,transparent 1px,transparent 13.5px,#222 0,#222 17.5px,transparent 0,transparent 31px);margin-top:62px;margin-top:3.444444444444445rem;margin-bottom:62px;margin-bottom:3.444444444444445rem;height:31px;height:1.722222222222222rem}}img{border:0;max-width:100%;display:block;margin:inherit auto}svg:not(:root){overflow:hidden}ol li,ul li{margin-bottom:0}nav{display:block}progress{display:inline-block;vertical-align:baseline}blockquote{font-style:italic;padding-left:23px;padding-left:1.4375rem}@media screen and (min-width:40em){blockquote{padding-left:2rem}}cite{display:block;font-style:normal}figure blockquote{padding:26px 0;padding:1.625rem 0}@media screen and (min-width:40em){figure blockquote{padding:62px 0 31px;padding:3.444444444444445rem 0 1.722222222222222rem;text-align:center}}figure blockquote p{font-size:27px;font-size:1.6875rem;line-height:39px;line-height:2.4375rem}@media screen and (min-width:40em){figure blockquote p{font-size:27px;font-size:1.6875rem;line-height:46.5px;line-height:2.583333333333334rem}}table{border-collapse:collapse;border-spacing:0}td,th{padding:0}[hidden],template{display:none}abbr{letter-spacing:.1em}abbr[title]{border-bottom:1px dotted}b,strong{font-weight:700}dfn{font-style:italic}em,i{line-height:0;position:relative;vertical-align:baseline}mark{background:#ff0;color:#000}small{line-height:13px;line-height:.8125rem;font-size:70%}@media screen and (min-width:40em){small{line-height:15.5px;line-height:.861111111111111rem}}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sup{top:-.5em}sub{bottom:-.25em}.attention-grabber{font-size:19.2px;font-size:1.2rem}.alignLeft{text-align:left}.alignCenter{text-align:center}.alignRight{text-align:right}.uppercase{letter-spacing:.1em;text-transform:uppercase}video{display:inline-block;vertical-align:baseline}a{color:#069}a:focus,a:hover{color:#e58e1a}.wrapper{max-width:1070px;margin-left:auto;margin-right:auto}.wrapper:after,.wrapper:before{content:\"\";display:table}.wrapper:after{clear:both}.content{width:calc(99.9% * 2/3 - 10px)}.content:nth-child(1n){float:left;margin-right:30px;clear:none}.content:last-child{margin-right:0}.content:nth-child(3n){margin-right:0;float:right}.content:nth-child(3n+1){clear:both}.main-inner{padding:40px 35px}@media screen and (max-width:1100px){.content{width:calc(99.9% * 2/4 - 15px)}.content:nth-child(1n){float:left;margin-right:30px;clear:none}.content:last-child{margin-right:0}.content:nth-child(4n){margin-right:0;float:right}.content:nth-child(4n+1){clear:both}.main-inner{padding:35px 20px}}@media screen and (max-width:900px){.content{width:calc(99.9% * 7/12 - 12.5px)}.content:nth-child(1n){float:left;margin-right:30px;clear:none}.content:last-child{margin-right:0}.content:nth-child(12n){margin-right:0;float:right}.content:nth-child(12n+1){clear:both}.main-inner{padding:30px 20px}}@media screen and (max-width:500px){.content{width:calc(99.9% * 4/4 - 0px)}.content:nth-child(1n){float:left;margin-right:30px;clear:none}.content:last-child{margin-right:0}.content:nth-child(4n){margin-right:0;float:right}.content:nth-child(4n+1){clear:both}.main-inner{padding:25px 20px}}.description{font-size:calc(12px + 2 * ((100vw - 420px) / 860));line-height:1.6}@media screen and (min-width:1280px){.description{font-size:14px}}@media screen and (max-width:420px){.description{font-size:12px}}.blog-post{margin-bottom:30px}.blog-post:last-child{margin-bottom:10px}.blog-post h2{margin-top:10px;line-height:30px;margin-bottom:20px}.blog-post h2 a{color:#222}.blog-post h2 a:focus,.blog-post h2 a:hover{border-bottom:1px solid}.blog-post p{font-size:16px;line-height:26px;margin-bottom:26px}.blog-post time{color:#222}.blog-post .blog-category,.blog-post time{font-size:14px;font-weight:500;text-transform:uppercase}.blog-post .blog-category{color:#f7a046}.blog-post .readmore{font-size:16px;color:#5d93ff}.blog-post .readmore:hover{border-bottom:1px solid}.blog-single{max-width:945px;margin-left:auto;margin-right:auto}.blog-single h1{text-align:center;margin-top:30px}.blog-single .text{line-height:31px;margin-bottom:31px}.blog-single .date-published,.blog-single .text :not(div),.blog-single h1{max-width:630px;margin-left:auto;margin-right:auto}.blog-single .text img{max-width:100%;height:auto}.blog-single .text iframe{max-width:100%}.blog-single .footer{max-width:630px;margin-left:auto;margin-right:auto;line-height:31px;margin-bottom:31px}.gohome{position:fixed;left:20px;font-size:16px;text-align:center;padding:8px 16px;color:#999;background:#f4f4f4;font-weight:400;border-radius:3px}.gohome:focus,.gohome:hover{color:#444;background:#f4f4f4;border:0}@media (max-width:900px){.blog-single h1{margin-top:15px}.blog-single .footer,.blog-single .text{padding:0 15px;line-height:26px;margin-bottom:26px}.gohome{position:static;margin:20px auto 0;text-align:center;width:85px;display:block}}p>code,span>code{white-space:pre;white-space:pre-wrap;white-space:pre-line;white-space:-pre-wrap;white-space:-o-pre-wrap;white-space:-moz-pre-wrap;white-space:-hp-pre-wrap;word-wrap:break-word;display:inline;font-family:Inconsolata,monospace,serif;max-width:100%;overflow:auto;padding:.25em .5em}p>code,pre code,span>code{border-radius:3px;background:#f8f8f8}pre code{display:block;overflow-x:auto;padding:.5em 1em;color:#333}.hljs-comment,.hljs-quote{color:#998;font-style:italic}.hljs-keyword,.hljs-selector-tag,.hljs-subst{color:#333;font-weight:700}.hljs-literal,.hljs-number,.hljs-tag .hljs-attr,.hljs-template-variable,.hljs-variable{color:teal}.hljs-doctag,.hljs-string{color:#d14}.hljs-section,.hljs-selector-id,.hljs-title{color:#900;font-weight:700}.hljs-subst{font-weight:400}.hljs-class .hljs-title,.hljs-type{color:#458;font-weight:700}.hljs-attribute,.hljs-name,.hljs-tag{color:navy;font-weight:400}.hljs-link,.hljs-regexp{color:#009926}.hljs-bullet,.hljs-symbol{color:#990073}.hljs-built_in,.hljs-builtin-name{color:#0086b3}.hljs-meta{color:#999;font-weight:700}.hljs-deletion{background:#fdd}.hljs-addition{background:#dfd}.hljs-emphasis{font-style:italic}.hljs-strong{font-weight:700}.blog-nav{margin:20px 0 10px}.blog-nav ul{list-style:none;padding-left:0}.blog-nav ul li{margin:10px 0}.blog-nav ul li a{font-size:16px;line-height:26px;margin-bottom:26px;border-bottom:0;font-weight:400;color:#222}.blog-nav ul li a.current,.blog-nav ul li a:hover{border-bottom:1px solid}.blog-links{margin-top:30px}.blog-links ul:after,.blog-links ul:before{content:\" \";display:table}.blog-links ul:after{clear:both}.blog-links ul{list-style:none;padding:0;margin:10px 0;zoom:1}.blog-links ul>li{float:left;margin-right:5px;text-align:center;height:24px;width:24px;border-radius:3px}.blog-links ul>li,.blog-links ul>li:hover{background:#f4f4f4}.blog-links ul>li>a{border-bottom:0}.blog-links ul>li>a>i{color:#606060;font-size:14px;line-height:24px}.blog-links ul>li:hover a>i{color:#444}/*!\n *  Font Awesome 4.5.0 by @davegandy - http://fontawesome.io - @fontawesome\n *  License - http://fontawesome.io/license (Font: SIL OFL 1.1, CSS: MIT License)\n */@font-face{font-family:FontAwesome;src:url(/32400f4e08932a94d8bfd2422702c446.eot);src:url(/32400f4e08932a94d8bfd2422702c446.eot?#iefix&v=4.5.0) format(\"embedded-opentype\"),url(/db812d8a70a4e88e888744c1c9a27e89.woff2) format(\"woff2\"),url(/a35720c2fed2c7f043bc7e4ffb45e073.woff) format(\"woff\"),url(/a3de2170e4e9df77161ea5d3f31b2668.ttf) format(\"truetype\"),url(data:image/svg+xml;base64,bW9kdWxlLmV4cG9ydHMgPSBfX3dlYnBhY2tfcHVibGljX3BhdGhfXyArICJmNzc1ZjljY2E4OGUyMWQ0NWJlYmUxODViMjdjMGU1Yi5zdmciOw==) format(\"svg\");font-weight:400;font-style:normal}.fa{display:inline-block;font:normal normal normal 14px/1 FontAwesome;font-size:inherit;text-rendering:auto;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.fa-lg{font-size:1.33333333em;line-height:.75em;vertical-align:-15%}.fa-2x{font-size:2em}.fa-3x{font-size:3em}.fa-4x{font-size:4em}.fa-5x{font-size:5em}.fa-fw{width:1.28571429em;text-align:center}.fa-ul{padding-left:0;margin-left:2.14285714em;list-style-type:none}.fa-ul>li{position:relative}.fa-li{position:absolute;left:-2.14285714em;width:2.14285714em;top:.14285714em;text-align:center}.fa-li.fa-lg{left:-1.85714286em}.fa-border{padding:.2em .25em .15em;border:.08em solid #eee;border-radius:.1em}.fa-pull-left{float:left}.fa-pull-right{float:right}.fa.fa-pull-left{margin-right:.3em}.fa.fa-pull-right{margin-left:.3em}.pull-right{float:right}.pull-left{float:left}.fa.pull-left{margin-right:.3em}.fa.pull-right{margin-left:.3em}.fa-spin{animation:fa-spin 2s infinite linear}.fa-pulse{animation:fa-spin 1s infinite steps(8)}@keyframes fa-spin{0%{transform:rotate(0deg)}to{transform:rotate(359deg)}}.fa-rotate-90{filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=1);transform:rotate(90deg)}.fa-rotate-180{filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=2);transform:rotate(180deg)}.fa-rotate-270{filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=3);transform:rotate(270deg)}.fa-flip-horizontal{filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=0,mirror=1);transform:scaleX(-1)}.fa-flip-vertical{filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=2,mirror=1);transform:scaleY(-1)}:root .fa-flip-horizontal,:root .fa-flip-vertical,:root .fa-rotate-90,:root .fa-rotate-180,:root .fa-rotate-270{filter:none}.fa-stack{position:relative;display:inline-block;width:2em;height:2em;line-height:2em;vertical-align:middle}.fa-stack-1x,.fa-stack-2x{position:absolute;left:0;width:100%;text-align:center}.fa-stack-1x{line-height:inherit}.fa-stack-2x{font-size:2em}.fa-inverse{color:#fff}.fa-glass:before{content:\"\\F000\"}.fa-music:before{content:\"\\F001\"}.fa-search:before{content:\"\\F002\"}.fa-envelope-o:before{content:\"\\F003\"}.fa-heart:before{content:\"\\F004\"}.fa-star:before{content:\"\\F005\"}.fa-star-o:before{content:\"\\F006\"}.fa-user:before{content:\"\\F007\"}.fa-film:before{content:\"\\F008\"}.fa-th-large:before{content:\"\\F009\"}.fa-th:before{content:\"\\F00A\"}.fa-th-list:before{content:\"\\F00B\"}.fa-check:before{content:\"\\F00C\"}.fa-close:before,.fa-remove:before,.fa-times:before{content:\"\\F00D\"}.fa-search-plus:before{content:\"\\F00E\"}.fa-search-minus:before{content:\"\\F010\"}.fa-power-off:before{content:\"\\F011\"}.fa-signal:before{content:\"\\F012\"}.fa-cog:before,.fa-gear:before{content:\"\\F013\"}.fa-trash-o:before{content:\"\\F014\"}.fa-home:before{content:\"\\F015\"}.fa-file-o:before{content:\"\\F016\"}.fa-clock-o:before{content:\"\\F017\"}.fa-road:before{content:\"\\F018\"}.fa-download:before{content:\"\\F019\"}.fa-arrow-circle-o-down:before{content:\"\\F01A\"}.fa-arrow-circle-o-up:before{content:\"\\F01B\"}.fa-inbox:before{content:\"\\F01C\"}.fa-play-circle-o:before{content:\"\\F01D\"}.fa-repeat:before,.fa-rotate-right:before{content:\"\\F01E\"}.fa-refresh:before{content:\"\\F021\"}.fa-list-alt:before{content:\"\\F022\"}.fa-lock:before{content:\"\\F023\"}.fa-flag:before{content:\"\\F024\"}.fa-headphones:before{content:\"\\F025\"}.fa-volume-off:before{content:\"\\F026\"}.fa-volume-down:before{content:\"\\F027\"}.fa-volume-up:before{content:\"\\F028\"}.fa-qrcode:before{content:\"\\F029\"}.fa-barcode:before{content:\"\\F02A\"}.fa-tag:before{content:\"\\F02B\"}.fa-tags:before{content:\"\\F02C\"}.fa-book:before{content:\"\\F02D\"}.fa-bookmark:before{content:\"\\F02E\"}.fa-print:before{content:\"\\F02F\"}.fa-camera:before{content:\"\\F030\"}.fa-font:before{content:\"\\F031\"}.fa-bold:before{content:\"\\F032\"}.fa-italic:before{content:\"\\F033\"}.fa-text-height:before{content:\"\\F034\"}.fa-text-width:before{content:\"\\F035\"}.fa-align-left:before{content:\"\\F036\"}.fa-align-center:before{content:\"\\F037\"}.fa-align-right:before{content:\"\\F038\"}.fa-align-justify:before{content:\"\\F039\"}.fa-list:before{content:\"\\F03A\"}.fa-dedent:before,.fa-outdent:before{content:\"\\F03B\"}.fa-indent:before{content:\"\\F03C\"}.fa-video-camera:before{content:\"\\F03D\"}.fa-image:before,.fa-photo:before,.fa-picture-o:before{content:\"\\F03E\"}.fa-pencil:before{content:\"\\F040\"}.fa-map-marker:before{content:\"\\F041\"}.fa-adjust:before{content:\"\\F042\"}.fa-tint:before{content:\"\\F043\"}.fa-edit:before,.fa-pencil-square-o:before{content:\"\\F044\"}.fa-share-square-o:before{content:\"\\F045\"}.fa-check-square-o:before{content:\"\\F046\"}.fa-arrows:before{content:\"\\F047\"}.fa-step-backward:before{content:\"\\F048\"}.fa-fast-backward:before{content:\"\\F049\"}.fa-backward:before{content:\"\\F04A\"}.fa-play:before{content:\"\\F04B\"}.fa-pause:before{content:\"\\F04C\"}.fa-stop:before{content:\"\\F04D\"}.fa-forward:before{content:\"\\F04E\"}.fa-fast-forward:before{content:\"\\F050\"}.fa-step-forward:before{content:\"\\F051\"}.fa-eject:before{content:\"\\F052\"}.fa-chevron-left:before{content:\"\\F053\"}.fa-chevron-right:before{content:\"\\F054\"}.fa-plus-circle:before{content:\"\\F055\"}.fa-minus-circle:before{content:\"\\F056\"}.fa-times-circle:before{content:\"\\F057\"}.fa-check-circle:before{content:\"\\F058\"}.fa-question-circle:before{content:\"\\F059\"}.fa-info-circle:before{content:\"\\F05A\"}.fa-crosshairs:before{content:\"\\F05B\"}.fa-times-circle-o:before{content:\"\\F05C\"}.fa-check-circle-o:before{content:\"\\F05D\"}.fa-ban:before{content:\"\\F05E\"}.fa-arrow-left:before{content:\"\\F060\"}.fa-arrow-right:before{content:\"\\F061\"}.fa-arrow-up:before{content:\"\\F062\"}.fa-arrow-down:before{content:\"\\F063\"}.fa-mail-forward:before,.fa-share:before{content:\"\\F064\"}.fa-expand:before{content:\"\\F065\"}.fa-compress:before{content:\"\\F066\"}.fa-plus:before{content:\"\\F067\"}.fa-minus:before{content:\"\\F068\"}.fa-asterisk:before{content:\"\\F069\"}.fa-exclamation-circle:before{content:\"\\F06A\"}.fa-gift:before{content:\"\\F06B\"}.fa-leaf:before{content:\"\\F06C\"}.fa-fire:before{content:\"\\F06D\"}.fa-eye:before{content:\"\\F06E\"}.fa-eye-slash:before{content:\"\\F070\"}.fa-exclamation-triangle:before,.fa-warning:before{content:\"\\F071\"}.fa-plane:before{content:\"\\F072\"}.fa-calendar:before{content:\"\\F073\"}.fa-random:before{content:\"\\F074\"}.fa-comment:before{content:\"\\F075\"}.fa-magnet:before{content:\"\\F076\"}.fa-chevron-up:before{content:\"\\F077\"}.fa-chevron-down:before{content:\"\\F078\"}.fa-retweet:before{content:\"\\F079\"}.fa-shopping-cart:before{content:\"\\F07A\"}.fa-folder:before{content:\"\\F07B\"}.fa-folder-open:before{content:\"\\F07C\"}.fa-arrows-v:before{content:\"\\F07D\"}.fa-arrows-h:before{content:\"\\F07E\"}.fa-bar-chart-o:before,.fa-bar-chart:before{content:\"\\F080\"}.fa-twitter-square:before{content:\"\\F081\"}.fa-facebook-square:before{content:\"\\F082\"}.fa-camera-retro:before{content:\"\\F083\"}.fa-key:before{content:\"\\F084\"}.fa-cogs:before,.fa-gears:before{content:\"\\F085\"}.fa-comments:before{content:\"\\F086\"}.fa-thumbs-o-up:before{content:\"\\F087\"}.fa-thumbs-o-down:before{content:\"\\F088\"}.fa-star-half:before{content:\"\\F089\"}.fa-heart-o:before{content:\"\\F08A\"}.fa-sign-out:before{content:\"\\F08B\"}.fa-linkedin-square:before{content:\"\\F08C\"}.fa-thumb-tack:before{content:\"\\F08D\"}.fa-external-link:before{content:\"\\F08E\"}.fa-sign-in:before{content:\"\\F090\"}.fa-trophy:before{content:\"\\F091\"}.fa-github-square:before{content:\"\\F092\"}.fa-upload:before{content:\"\\F093\"}.fa-lemon-o:before{content:\"\\F094\"}.fa-phone:before{content:\"\\F095\"}.fa-square-o:before{content:\"\\F096\"}.fa-bookmark-o:before{content:\"\\F097\"}.fa-phone-square:before{content:\"\\F098\"}.fa-twitter:before{content:\"\\F099\"}.fa-facebook-f:before,.fa-facebook:before{content:\"\\F09A\"}.fa-github:before{content:\"\\F09B\"}.fa-unlock:before{content:\"\\F09C\"}.fa-credit-card:before{content:\"\\F09D\"}.fa-feed:before,.fa-rss:before{content:\"\\F09E\"}.fa-hdd-o:before{content:\"\\F0A0\"}.fa-bullhorn:before{content:\"\\F0A1\"}.fa-bell:before{content:\"\\F0F3\"}.fa-certificate:before{content:\"\\F0A3\"}.fa-hand-o-right:before{content:\"\\F0A4\"}.fa-hand-o-left:before{content:\"\\F0A5\"}.fa-hand-o-up:before{content:\"\\F0A6\"}.fa-hand-o-down:before{content:\"\\F0A7\"}.fa-arrow-circle-left:before{content:\"\\F0A8\"}.fa-arrow-circle-right:before{content:\"\\F0A9\"}.fa-arrow-circle-up:before{content:\"\\F0AA\"}.fa-arrow-circle-down:before{content:\"\\F0AB\"}.fa-globe:before{content:\"\\F0AC\"}.fa-wrench:before{content:\"\\F0AD\"}.fa-tasks:before{content:\"\\F0AE\"}.fa-filter:before{content:\"\\F0B0\"}.fa-briefcase:before{content:\"\\F0B1\"}.fa-arrows-alt:before{content:\"\\F0B2\"}.fa-group:before,.fa-users:before{content:\"\\F0C0\"}.fa-chain:before,.fa-link:before{content:\"\\F0C1\"}.fa-cloud:before{content:\"\\F0C2\"}.fa-flask:before{content:\"\\F0C3\"}.fa-cut:before,.fa-scissors:before{content:\"\\F0C4\"}.fa-copy:before,.fa-files-o:before{content:\"\\F0C5\"}.fa-paperclip:before{content:\"\\F0C6\"}.fa-floppy-o:before,.fa-save:before{content:\"\\F0C7\"}.fa-square:before{content:\"\\F0C8\"}.fa-bars:before,.fa-navicon:before,.fa-reorder:before{content:\"\\F0C9\"}.fa-list-ul:before{content:\"\\F0CA\"}.fa-list-ol:before{content:\"\\F0CB\"}.fa-strikethrough:before{content:\"\\F0CC\"}.fa-underline:before{content:\"\\F0CD\"}.fa-table:before{content:\"\\F0CE\"}.fa-magic:before{content:\"\\F0D0\"}.fa-truck:before{content:\"\\F0D1\"}.fa-pinterest:before{content:\"\\F0D2\"}.fa-pinterest-square:before{content:\"\\F0D3\"}.fa-google-plus-square:before{content:\"\\F0D4\"}.fa-google-plus:before{content:\"\\F0D5\"}.fa-money:before{content:\"\\F0D6\"}.fa-caret-down:before{content:\"\\F0D7\"}.fa-caret-up:before{content:\"\\F0D8\"}.fa-caret-left:before{content:\"\\F0D9\"}.fa-caret-right:before{content:\"\\F0DA\"}.fa-columns:before{content:\"\\F0DB\"}.fa-sort:before,.fa-unsorted:before{content:\"\\F0DC\"}.fa-sort-desc:before,.fa-sort-down:before{content:\"\\F0DD\"}.fa-sort-asc:before,.fa-sort-up:before{content:\"\\F0DE\"}.fa-envelope:before{content:\"\\F0E0\"}.fa-linkedin:before{content:\"\\F0E1\"}.fa-rotate-left:before,.fa-undo:before{content:\"\\F0E2\"}.fa-gavel:before,.fa-legal:before{content:\"\\F0E3\"}.fa-dashboard:before,.fa-tachometer:before{content:\"\\F0E4\"}.fa-comment-o:before{content:\"\\F0E5\"}.fa-comments-o:before{content:\"\\F0E6\"}.fa-bolt:before,.fa-flash:before{content:\"\\F0E7\"}.fa-sitemap:before{content:\"\\F0E8\"}.fa-umbrella:before{content:\"\\F0E9\"}.fa-clipboard:before,.fa-paste:before{content:\"\\F0EA\"}.fa-lightbulb-o:before{content:\"\\F0EB\"}.fa-exchange:before{content:\"\\F0EC\"}.fa-cloud-download:before{content:\"\\F0ED\"}.fa-cloud-upload:before{content:\"\\F0EE\"}.fa-user-md:before{content:\"\\F0F0\"}.fa-stethoscope:before{content:\"\\F0F1\"}.fa-suitcase:before{content:\"\\F0F2\"}.fa-bell-o:before{content:\"\\F0A2\"}.fa-coffee:before{content:\"\\F0F4\"}.fa-cutlery:before{content:\"\\F0F5\"}.fa-file-text-o:before{content:\"\\F0F6\"}.fa-building-o:before{content:\"\\F0F7\"}.fa-hospital-o:before{content:\"\\F0F8\"}.fa-ambulance:before{content:\"\\F0F9\"}.fa-medkit:before{content:\"\\F0FA\"}.fa-fighter-jet:before{content:\"\\F0FB\"}.fa-beer:before{content:\"\\F0FC\"}.fa-h-square:before{content:\"\\F0FD\"}.fa-plus-square:before{content:\"\\F0FE\"}.fa-angle-double-left:before{content:\"\\F100\"}.fa-angle-double-right:before{content:\"\\F101\"}.fa-angle-double-up:before{content:\"\\F102\"}.fa-angle-double-down:before{content:\"\\F103\"}.fa-angle-left:before{content:\"\\F104\"}.fa-angle-right:before{content:\"\\F105\"}.fa-angle-up:before{content:\"\\F106\"}.fa-angle-down:before{content:\"\\F107\"}.fa-desktop:before{content:\"\\F108\"}.fa-laptop:before{content:\"\\F109\"}.fa-tablet:before{content:\"\\F10A\"}.fa-mobile-phone:before,.fa-mobile:before{content:\"\\F10B\"}.fa-circle-o:before{content:\"\\F10C\"}.fa-quote-left:before{content:\"\\F10D\"}.fa-quote-right:before{content:\"\\F10E\"}.fa-spinner:before{content:\"\\F110\"}.fa-circle:before{content:\"\\F111\"}.fa-mail-reply:before,.fa-reply:before{content:\"\\F112\"}.fa-github-alt:before{content:\"\\F113\"}.fa-folder-o:before{content:\"\\F114\"}.fa-folder-open-o:before{content:\"\\F115\"}.fa-smile-o:before{content:\"\\F118\"}.fa-frown-o:before{content:\"\\F119\"}.fa-meh-o:before{content:\"\\F11A\"}.fa-gamepad:before{content:\"\\F11B\"}.fa-keyboard-o:before{content:\"\\F11C\"}.fa-flag-o:before{content:\"\\F11D\"}.fa-flag-checkered:before{content:\"\\F11E\"}.fa-terminal:before{content:\"\\F120\"}.fa-code:before{content:\"\\F121\"}.fa-mail-reply-all:before,.fa-reply-all:before{content:\"\\F122\"}.fa-star-half-empty:before,.fa-star-half-full:before,.fa-star-half-o:before{content:\"\\F123\"}.fa-location-arrow:before{content:\"\\F124\"}.fa-crop:before{content:\"\\F125\"}.fa-code-fork:before{content:\"\\F126\"}.fa-chain-broken:before,.fa-unlink:before{content:\"\\F127\"}.fa-question:before{content:\"\\F128\"}.fa-info:before{content:\"\\F129\"}.fa-exclamation:before{content:\"\\F12A\"}.fa-superscript:before{content:\"\\F12B\"}.fa-subscript:before{content:\"\\F12C\"}.fa-eraser:before{content:\"\\F12D\"}.fa-puzzle-piece:before{content:\"\\F12E\"}.fa-microphone:before{content:\"\\F130\"}.fa-microphone-slash:before{content:\"\\F131\"}.fa-shield:before{content:\"\\F132\"}.fa-calendar-o:before{content:\"\\F133\"}.fa-fire-extinguisher:before{content:\"\\F134\"}.fa-rocket:before{content:\"\\F135\"}.fa-maxcdn:before{content:\"\\F136\"}.fa-chevron-circle-left:before{content:\"\\F137\"}.fa-chevron-circle-right:before{content:\"\\F138\"}.fa-chevron-circle-up:before{content:\"\\F139\"}.fa-chevron-circle-down:before{content:\"\\F13A\"}.fa-html5:before{content:\"\\F13B\"}.fa-css3:before{content:\"\\F13C\"}.fa-anchor:before{content:\"\\F13D\"}.fa-unlock-alt:before{content:\"\\F13E\"}.fa-bullseye:before{content:\"\\F140\"}.fa-ellipsis-h:before{content:\"\\F141\"}.fa-ellipsis-v:before{content:\"\\F142\"}.fa-rss-square:before{content:\"\\F143\"}.fa-play-circle:before{content:\"\\F144\"}.fa-ticket:before{content:\"\\F145\"}.fa-minus-square:before{content:\"\\F146\"}.fa-minus-square-o:before{content:\"\\F147\"}.fa-level-up:before{content:\"\\F148\"}.fa-level-down:before{content:\"\\F149\"}.fa-check-square:before{content:\"\\F14A\"}.fa-pencil-square:before{content:\"\\F14B\"}.fa-external-link-square:before{content:\"\\F14C\"}.fa-share-square:before{content:\"\\F14D\"}.fa-compass:before{content:\"\\F14E\"}.fa-caret-square-o-down:before,.fa-toggle-down:before{content:\"\\F150\"}.fa-caret-square-o-up:before,.fa-toggle-up:before{content:\"\\F151\"}.fa-caret-square-o-right:before,.fa-toggle-right:before{content:\"\\F152\"}.fa-eur:before,.fa-euro:before{content:\"\\F153\"}.fa-gbp:before{content:\"\\F154\"}.fa-dollar:before,.fa-usd:before{content:\"\\F155\"}.fa-inr:before,.fa-rupee:before{content:\"\\F156\"}.fa-cny:before,.fa-jpy:before,.fa-rmb:before,.fa-yen:before{content:\"\\F157\"}.fa-rouble:before,.fa-rub:before,.fa-ruble:before{content:\"\\F158\"}.fa-krw:before,.fa-won:before{content:\"\\F159\"}.fa-bitcoin:before,.fa-btc:before{content:\"\\F15A\"}.fa-file:before{content:\"\\F15B\"}.fa-file-text:before{content:\"\\F15C\"}.fa-sort-alpha-asc:before{content:\"\\F15D\"}.fa-sort-alpha-desc:before{content:\"\\F15E\"}.fa-sort-amount-asc:before{content:\"\\F160\"}.fa-sort-amount-desc:before{content:\"\\F161\"}.fa-sort-numeric-asc:before{content:\"\\F162\"}.fa-sort-numeric-desc:before{content:\"\\F163\"}.fa-thumbs-up:before{content:\"\\F164\"}.fa-thumbs-down:before{content:\"\\F165\"}.fa-youtube-square:before{content:\"\\F166\"}.fa-youtube:before{content:\"\\F167\"}.fa-xing:before{content:\"\\F168\"}.fa-xing-square:before{content:\"\\F169\"}.fa-youtube-play:before{content:\"\\F16A\"}.fa-dropbox:before{content:\"\\F16B\"}.fa-stack-overflow:before{content:\"\\F16C\"}.fa-instagram:before{content:\"\\F16D\"}.fa-flickr:before{content:\"\\F16E\"}.fa-adn:before{content:\"\\F170\"}.fa-bitbucket:before{content:\"\\F171\"}.fa-bitbucket-square:before{content:\"\\F172\"}.fa-tumblr:before{content:\"\\F173\"}.fa-tumblr-square:before{content:\"\\F174\"}.fa-long-arrow-down:before{content:\"\\F175\"}.fa-long-arrow-up:before{content:\"\\F176\"}.fa-long-arrow-left:before{content:\"\\F177\"}.fa-long-arrow-right:before{content:\"\\F178\"}.fa-apple:before{content:\"\\F179\"}.fa-windows:before{content:\"\\F17A\"}.fa-android:before{content:\"\\F17B\"}.fa-linux:before{content:\"\\F17C\"}.fa-dribbble:before{content:\"\\F17D\"}.fa-skype:before{content:\"\\F17E\"}.fa-foursquare:before{content:\"\\F180\"}.fa-trello:before{content:\"\\F181\"}.fa-female:before{content:\"\\F182\"}.fa-male:before{content:\"\\F183\"}.fa-gittip:before,.fa-gratipay:before{content:\"\\F184\"}.fa-sun-o:before{content:\"\\F185\"}.fa-moon-o:before{content:\"\\F186\"}.fa-archive:before{content:\"\\F187\"}.fa-bug:before{content:\"\\F188\"}.fa-vk:before{content:\"\\F189\"}.fa-weibo:before{content:\"\\F18A\"}.fa-renren:before{content:\"\\F18B\"}.fa-pagelines:before{content:\"\\F18C\"}.fa-stack-exchange:before{content:\"\\F18D\"}.fa-arrow-circle-o-right:before{content:\"\\F18E\"}.fa-arrow-circle-o-left:before{content:\"\\F190\"}.fa-caret-square-o-left:before,.fa-toggle-left:before{content:\"\\F191\"}.fa-dot-circle-o:before{content:\"\\F192\"}.fa-wheelchair:before{content:\"\\F193\"}.fa-vimeo-square:before{content:\"\\F194\"}.fa-try:before,.fa-turkish-lira:before{content:\"\\F195\"}.fa-plus-square-o:before{content:\"\\F196\"}.fa-space-shuttle:before{content:\"\\F197\"}.fa-slack:before{content:\"\\F198\"}.fa-envelope-square:before{content:\"\\F199\"}.fa-wordpress:before{content:\"\\F19A\"}.fa-openid:before{content:\"\\F19B\"}.fa-bank:before,.fa-institution:before,.fa-university:before{content:\"\\F19C\"}.fa-graduation-cap:before,.fa-mortar-board:before{content:\"\\F19D\"}.fa-yahoo:before{content:\"\\F19E\"}.fa-google:before{content:\"\\F1A0\"}.fa-reddit:before{content:\"\\F1A1\"}.fa-reddit-square:before{content:\"\\F1A2\"}.fa-stumbleupon-circle:before{content:\"\\F1A3\"}.fa-stumbleupon:before{content:\"\\F1A4\"}.fa-delicious:before{content:\"\\F1A5\"}.fa-digg:before{content:\"\\F1A6\"}.fa-pied-piper:before{content:\"\\F1A7\"}.fa-pied-piper-alt:before{content:\"\\F1A8\"}.fa-drupal:before{content:\"\\F1A9\"}.fa-joomla:before{content:\"\\F1AA\"}.fa-language:before{content:\"\\F1AB\"}.fa-fax:before{content:\"\\F1AC\"}.fa-building:before{content:\"\\F1AD\"}.fa-child:before{content:\"\\F1AE\"}.fa-paw:before{content:\"\\F1B0\"}.fa-spoon:before{content:\"\\F1B1\"}.fa-cube:before{content:\"\\F1B2\"}.fa-cubes:before{content:\"\\F1B3\"}.fa-behance:before{content:\"\\F1B4\"}.fa-behance-square:before{content:\"\\F1B5\"}.fa-steam:before{content:\"\\F1B6\"}.fa-steam-square:before{content:\"\\F1B7\"}.fa-recycle:before{content:\"\\F1B8\"}.fa-automobile:before,.fa-car:before{content:\"\\F1B9\"}.fa-cab:before,.fa-taxi:before{content:\"\\F1BA\"}.fa-tree:before{content:\"\\F1BB\"}.fa-spotify:before{content:\"\\F1BC\"}.fa-deviantart:before{content:\"\\F1BD\"}.fa-soundcloud:before{content:\"\\F1BE\"}.fa-database:before{content:\"\\F1C0\"}.fa-file-pdf-o:before{content:\"\\F1C1\"}.fa-file-word-o:before{content:\"\\F1C2\"}.fa-file-excel-o:before{content:\"\\F1C3\"}.fa-file-powerpoint-o:before{content:\"\\F1C4\"}.fa-file-image-o:before,.fa-file-photo-o:before,.fa-file-picture-o:before{content:\"\\F1C5\"}.fa-file-archive-o:before,.fa-file-zip-o:before{content:\"\\F1C6\"}.fa-file-audio-o:before,.fa-file-sound-o:before{content:\"\\F1C7\"}.fa-file-movie-o:before,.fa-file-video-o:before{content:\"\\F1C8\"}.fa-file-code-o:before{content:\"\\F1C9\"}.fa-vine:before{content:\"\\F1CA\"}.fa-codepen:before{content:\"\\F1CB\"}.fa-jsfiddle:before{content:\"\\F1CC\"}.fa-life-bouy:before,.fa-life-buoy:before,.fa-life-ring:before,.fa-life-saver:before,.fa-support:before{content:\"\\F1CD\"}.fa-circle-o-notch:before{content:\"\\F1CE\"}.fa-ra:before,.fa-rebel:before{content:\"\\F1D0\"}.fa-empire:before,.fa-ge:before{content:\"\\F1D1\"}.fa-git-square:before{content:\"\\F1D2\"}.fa-git:before{content:\"\\F1D3\"}.fa-hacker-news:before,.fa-y-combinator-square:before,.fa-yc-square:before{content:\"\\F1D4\"}.fa-tencent-weibo:before{content:\"\\F1D5\"}.fa-qq:before{content:\"\\F1D6\"}.fa-wechat:before,.fa-weixin:before{content:\"\\F1D7\"}.fa-paper-plane:before,.fa-send:before{content:\"\\F1D8\"}.fa-paper-plane-o:before,.fa-send-o:before{content:\"\\F1D9\"}.fa-history:before{content:\"\\F1DA\"}.fa-circle-thin:before{content:\"\\F1DB\"}.fa-header:before{content:\"\\F1DC\"}.fa-paragraph:before{content:\"\\F1DD\"}.fa-sliders:before{content:\"\\F1DE\"}.fa-share-alt:before{content:\"\\F1E0\"}.fa-share-alt-square:before{content:\"\\F1E1\"}.fa-bomb:before{content:\"\\F1E2\"}.fa-futbol-o:before,.fa-soccer-ball-o:before{content:\"\\F1E3\"}.fa-tty:before{content:\"\\F1E4\"}.fa-binoculars:before{content:\"\\F1E5\"}.fa-plug:before{content:\"\\F1E6\"}.fa-slideshare:before{content:\"\\F1E7\"}.fa-twitch:before{content:\"\\F1E8\"}.fa-yelp:before{content:\"\\F1E9\"}.fa-newspaper-o:before{content:\"\\F1EA\"}.fa-wifi:before{content:\"\\F1EB\"}.fa-calculator:before{content:\"\\F1EC\"}.fa-paypal:before{content:\"\\F1ED\"}.fa-google-wallet:before{content:\"\\F1EE\"}.fa-cc-visa:before{content:\"\\F1F0\"}.fa-cc-mastercard:before{content:\"\\F1F1\"}.fa-cc-discover:before{content:\"\\F1F2\"}.fa-cc-amex:before{content:\"\\F1F3\"}.fa-cc-paypal:before{content:\"\\F1F4\"}.fa-cc-stripe:before{content:\"\\F1F5\"}.fa-bell-slash:before{content:\"\\F1F6\"}.fa-bell-slash-o:before{content:\"\\F1F7\"}.fa-trash:before{content:\"\\F1F8\"}.fa-copyright:before{content:\"\\F1F9\"}.fa-at:before{content:\"\\F1FA\"}.fa-eyedropper:before{content:\"\\F1FB\"}.fa-paint-brush:before{content:\"\\F1FC\"}.fa-birthday-cake:before{content:\"\\F1FD\"}.fa-area-chart:before{content:\"\\F1FE\"}.fa-pie-chart:before{content:\"\\F200\"}.fa-line-chart:before{content:\"\\F201\"}.fa-lastfm:before{content:\"\\F202\"}.fa-lastfm-square:before{content:\"\\F203\"}.fa-toggle-off:before{content:\"\\F204\"}.fa-toggle-on:before{content:\"\\F205\"}.fa-bicycle:before{content:\"\\F206\"}.fa-bus:before{content:\"\\F207\"}.fa-ioxhost:before{content:\"\\F208\"}.fa-angellist:before{content:\"\\F209\"}.fa-cc:before{content:\"\\F20A\"}.fa-ils:before,.fa-shekel:before,.fa-sheqel:before{content:\"\\F20B\"}.fa-meanpath:before{content:\"\\F20C\"}.fa-buysellads:before{content:\"\\F20D\"}.fa-connectdevelop:before{content:\"\\F20E\"}.fa-dashcube:before{content:\"\\F210\"}.fa-forumbee:before{content:\"\\F211\"}.fa-leanpub:before{content:\"\\F212\"}.fa-sellsy:before{content:\"\\F213\"}.fa-shirtsinbulk:before{content:\"\\F214\"}.fa-simplybuilt:before{content:\"\\F215\"}.fa-skyatlas:before{content:\"\\F216\"}.fa-cart-plus:before{content:\"\\F217\"}.fa-cart-arrow-down:before{content:\"\\F218\"}.fa-diamond:before{content:\"\\F219\"}.fa-ship:before{content:\"\\F21A\"}.fa-user-secret:before{content:\"\\F21B\"}.fa-motorcycle:before{content:\"\\F21C\"}.fa-street-view:before{content:\"\\F21D\"}.fa-heartbeat:before{content:\"\\F21E\"}.fa-venus:before{content:\"\\F221\"}.fa-mars:before{content:\"\\F222\"}.fa-mercury:before{content:\"\\F223\"}.fa-intersex:before,.fa-transgender:before{content:\"\\F224\"}.fa-transgender-alt:before{content:\"\\F225\"}.fa-venus-double:before{content:\"\\F226\"}.fa-mars-double:before{content:\"\\F227\"}.fa-venus-mars:before{content:\"\\F228\"}.fa-mars-stroke:before{content:\"\\F229\"}.fa-mars-stroke-v:before{content:\"\\F22A\"}.fa-mars-stroke-h:before{content:\"\\F22B\"}.fa-neuter:before{content:\"\\F22C\"}.fa-genderless:before{content:\"\\F22D\"}.fa-facebook-official:before{content:\"\\F230\"}.fa-pinterest-p:before{content:\"\\F231\"}.fa-whatsapp:before{content:\"\\F232\"}.fa-server:before{content:\"\\F233\"}.fa-user-plus:before{content:\"\\F234\"}.fa-user-times:before{content:\"\\F235\"}.fa-bed:before,.fa-hotel:before{content:\"\\F236\"}.fa-viacoin:before{content:\"\\F237\"}.fa-train:before{content:\"\\F238\"}.fa-subway:before{content:\"\\F239\"}.fa-medium:before{content:\"\\F23A\"}.fa-y-combinator:before,.fa-yc:before{content:\"\\F23B\"}.fa-optin-monster:before{content:\"\\F23C\"}.fa-opencart:before{content:\"\\F23D\"}.fa-expeditedssl:before{content:\"\\F23E\"}.fa-battery-4:before,.fa-battery-full:before{content:\"\\F240\"}.fa-battery-3:before,.fa-battery-three-quarters:before{content:\"\\F241\"}.fa-battery-2:before,.fa-battery-half:before{content:\"\\F242\"}.fa-battery-1:before,.fa-battery-quarter:before{content:\"\\F243\"}.fa-battery-0:before,.fa-battery-empty:before{content:\"\\F244\"}.fa-mouse-pointer:before{content:\"\\F245\"}.fa-i-cursor:before{content:\"\\F246\"}.fa-object-group:before{content:\"\\F247\"}.fa-object-ungroup:before{content:\"\\F248\"}.fa-sticky-note:before{content:\"\\F249\"}.fa-sticky-note-o:before{content:\"\\F24A\"}.fa-cc-jcb:before{content:\"\\F24B\"}.fa-cc-diners-club:before{content:\"\\F24C\"}.fa-clone:before{content:\"\\F24D\"}.fa-balance-scale:before{content:\"\\F24E\"}.fa-hourglass-o:before{content:\"\\F250\"}.fa-hourglass-1:before,.fa-hourglass-start:before{content:\"\\F251\"}.fa-hourglass-2:before,.fa-hourglass-half:before{content:\"\\F252\"}.fa-hourglass-3:before,.fa-hourglass-end:before{content:\"\\F253\"}.fa-hourglass:before{content:\"\\F254\"}.fa-hand-grab-o:before,.fa-hand-rock-o:before{content:\"\\F255\"}.fa-hand-paper-o:before,.fa-hand-stop-o:before{content:\"\\F256\"}.fa-hand-scissors-o:before{content:\"\\F257\"}.fa-hand-lizard-o:before{content:\"\\F258\"}.fa-hand-spock-o:before{content:\"\\F259\"}.fa-hand-pointer-o:before{content:\"\\F25A\"}.fa-hand-peace-o:before{content:\"\\F25B\"}.fa-trademark:before{content:\"\\F25C\"}.fa-registered:before{content:\"\\F25D\"}.fa-creative-commons:before{content:\"\\F25E\"}.fa-gg:before{content:\"\\F260\"}.fa-gg-circle:before{content:\"\\F261\"}.fa-tripadvisor:before{content:\"\\F262\"}.fa-odnoklassniki:before{content:\"\\F263\"}.fa-odnoklassniki-square:before{content:\"\\F264\"}.fa-get-pocket:before{content:\"\\F265\"}.fa-wikipedia-w:before{content:\"\\F266\"}.fa-safari:before{content:\"\\F267\"}.fa-chrome:before{content:\"\\F268\"}.fa-firefox:before{content:\"\\F269\"}.fa-opera:before{content:\"\\F26A\"}.fa-internet-explorer:before{content:\"\\F26B\"}.fa-television:before,.fa-tv:before{content:\"\\F26C\"}.fa-contao:before{content:\"\\F26D\"}.fa-500px:before{content:\"\\F26E\"}.fa-amazon:before{content:\"\\F270\"}.fa-calendar-plus-o:before{content:\"\\F271\"}.fa-calendar-minus-o:before{content:\"\\F272\"}.fa-calendar-times-o:before{content:\"\\F273\"}.fa-calendar-check-o:before{content:\"\\F274\"}.fa-industry:before{content:\"\\F275\"}.fa-map-pin:before{content:\"\\F276\"}.fa-map-signs:before{content:\"\\F277\"}.fa-map-o:before{content:\"\\F278\"}.fa-map:before{content:\"\\F279\"}.fa-commenting:before{content:\"\\F27A\"}.fa-commenting-o:before{content:\"\\F27B\"}.fa-houzz:before{content:\"\\F27C\"}.fa-vimeo:before{content:\"\\F27D\"}.fa-black-tie:before{content:\"\\F27E\"}.fa-fonticons:before{content:\"\\F280\"}.fa-reddit-alien:before{content:\"\\F281\"}.fa-edge:before{content:\"\\F282\"}.fa-credit-card-alt:before{content:\"\\F283\"}.fa-codiepie:before{content:\"\\F284\"}.fa-modx:before{content:\"\\F285\"}.fa-fort-awesome:before{content:\"\\F286\"}.fa-usb:before{content:\"\\F287\"}.fa-product-hunt:before{content:\"\\F288\"}.fa-mixcloud:before{content:\"\\F289\"}.fa-scribd:before{content:\"\\F28A\"}.fa-pause-circle:before{content:\"\\F28B\"}.fa-pause-circle-o:before{content:\"\\F28C\"}.fa-stop-circle:before{content:\"\\F28D\"}.fa-stop-circle-o:before{content:\"\\F28E\"}.fa-shopping-bag:before{content:\"\\F290\"}.fa-shopping-basket:before{content:\"\\F291\"}.fa-hashtag:before{content:\"\\F292\"}.fa-bluetooth:before{content:\"\\F293\"}.fa-bluetooth-b:before{content:\"\\F294\"}.fa-percent:before{content:\"\\F295\"}.sidebar{width:calc(99.9% * 1/3 - 20px)}.sidebar:nth-child(1n){float:left;margin-right:30px;clear:none}.sidebar:last-child{margin-right:0}.sidebar:nth-child(3n){margin-right:0;float:right}.sidebar:nth-child(3n+1){clear:both}.sidebar .sidebar-inner{position:relative;padding:40px}.sidebar .sidebar-inner:after{background:#eee;background:linear-gradient(180deg,#eee 0,#eee 48%,#fff);position:absolute;content:\"\";width:1px;height:540px;top:30px;right:-10px;bottom:0}.sidebar .sidebar-inner img{display:inline-block;margin-bottom:0;border-radius:50%;background-clip:padding-box}.sidebar .sidebar-inner h1,.sidebar .sidebar-inner h2{font-size:18px;font-weight:500;line-height:18px;margin:20px 0 10px}.sidebar .sidebar-inner p{color:#888;font-size:16px;line-height:26px;margin-bottom:26px}.sidebar .sidebar-inner p.copyright{color:#b6b6b6;font-size:14px}@media (max-width:1100px){.sidebar .sidebar-inner{padding:35px 20px 0}.sidebar{width:calc(99.9% * 1/2 - 15px)}.sidebar:nth-child(1n){float:left;margin-right:30px;clear:none}.sidebar:last-child{margin-right:0}.sidebar:nth-child(2n){margin-right:0;float:right}.sidebar:nth-child(odd){clear:both}}@media (max-width:900px){.sidebar{width:calc(99.9% * 5/12 - 17.5px)}.sidebar:nth-child(1n){float:left;margin-right:30px;clear:none}.sidebar:last-child{margin-right:0}.sidebar:nth-child(12n){margin-right:0;float:right}.sidebar:nth-child(12n+1){clear:both}.sidebar .sidebar-inner{padding:30px 20px 0}}@media (max-width:500px){.sidebar{width:calc(99.9% * 1 - 0px)}.sidebar:nth-child(1n){float:left;margin-right:30px;clear:none}.sidebar:last-child{margin-right:0}.sidebar:nth-child(NaNn){margin-right:0;float:right}.sidebar:nth-child(NaNn+1){clear:both}.sidebar .sidebar-inner{padding:25px 20px 0}.sidebar .sidebar-inner:after{display:none}}.blog-page{margin-bottom:40px}.blog-page h1{font-size:calc(20px + 16 * ((100vw - 420px) / 860));margin-top:0}@media screen and (min-width:1280px){.blog-page h1{font-size:36px}}@media screen and (max-width:420px){.blog-page h1{font-size:20px}}.blog-page p{font-size:16px;line-height:26px;margin-bottom:26px;color:#333}.blog-page a{color:#069;text-decoration:underline}.blog-page a:hover{color:#e58e1a}@media (max-width:900px){.blog-single .footer,.blog-single .text{padding:0 15px}}.resume-page{margin-bottom:40px}.resume-page h1,.resume-page h2,.resume-page h3,.resume-page h4{color:#2c3e50}.resume-page h1{font-size:calc(20px + 16 * ((100vw - 420px) / 860));margin-top:0}@media screen and (min-width:1280px){.resume-page h1{font-size:36px}}@media screen and (max-width:420px){.resume-page h1{font-size:20px}}.resume-page p{font-size:16px;line-height:26px;margin-bottom:26px;color:#333}.resume-page a{color:#069;text-decoration:underline}.resume-page a:hover{color:#e58e1a}.resume-page ul li{color:#333}.resume-page .position p{color:#e58e1a}.resume-page .summary-box{background-color:#2c3e50;padding:1px 40px 28px}.resume-page .summary-box .summary-h3,.resume-page .summary-box .summary-p{color:#fff}.resume-page .section-h2{text-transform:capitalize;background-color:#2c3e50;color:#fff;padding:10px 10px 10px 20px;margin-bottom:-10px}.resume-page .projects-h4{margin-top:10px}.resume-page .project-p{margin-top:-16px}"
 
 /***/ }),
-/* 608 */
+/* 609 */
 /***/ (function(module, exports) {
 
 	"use strict";
 
 /***/ }),
-/* 609 */
+/* 610 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -51028,7 +50919,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// files from your pages directory.
 
 	module.exports = function (callback) {
-	  var context = __webpack_require__(610);if (false) {
+	  var context = __webpack_require__(611);if (false) {
 	    module.hot.accept(context.id, function () {
 	      context = require.context('./pages', true, /(coffee|cjsx|ts|tsx|jsx|js|md|rmd|mkdn?|mdwn|mdown|markdown|litcoffee|ipynb|html|json|yaml|toml)$/ // eslint-disable-line
 	      );return callback(context);
@@ -51038,24 +50929,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ }),
-/* 610 */
+/* 611 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	var map = {
-		"./404.md": 611,
+		"./404.md": 612,
 		"./_template.jsx": 372,
-		"./articles/2017-02-24-hello-world/index.md": 612,
-		"./articles/2017-02-25-Goals/index.md": 613,
-		"./articles/2017-03-01-postCSS/index.md": 614,
-		"./articles/2017-03-12-vuejs/index.md": 615,
-		"./articles/2017-12-15-year-in-review/index.md": 616,
-		"./articles/2018-02-21-2018-goals-for-2018/index.md": 617,
-		"./articles/2018-12-10-Gartner-takeaways/index.md": 618,
-		"./index.jsx": 619,
-		"./pages/about/index.md": 620,
-		"./pages/portfolio/index.md": 621,
-		"./pages/resume/index.md": 622,
-		"./pages/uses/index.md": 623
+		"./articles/2017-02-24-hello-world/index.md": 613,
+		"./articles/2017-02-25-Goals/index.md": 614,
+		"./articles/2017-03-01-postCSS/index.md": 615,
+		"./articles/2017-03-12-vuejs/index.md": 616,
+		"./articles/2017-12-15-year-in-review/index.md": 617,
+		"./articles/2018-02-21-2018-goals-for-2018/index.md": 618,
+		"./articles/2018-12-10-Gartner-takeaways/index.md": 619,
+		"./index.jsx": 620,
+		"./pages/about/index.md": 621,
+		"./pages/portfolio/index.md": 622,
+		"./pages/resume/index.md": 623,
+		"./pages/uses/index.md": 624
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -51068,59 +50959,59 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 610;
+	webpackContext.id = 611;
 
-
-/***/ }),
-/* 611 */
-/***/ (function(module, exports) {
-
-	module.exports = {"path":"/404.html","layout":"page","body":"<h1>NOT FOUND</h1>\n<p>You just hit a route that doesn’t exist… the sadness.</p>\n"}
 
 /***/ }),
 /* 612 */
 /***/ (function(module, exports) {
 
-	module.exports = {"title":"Hello World","date":"2017-02-24","layout":"post","path":"/hello-world/","category":"Beginning Blogging","description":"Blog redesign using Gatsby.","readNext":"/goals-for-2017","body":"<p><img src=\"./code.jpg\" alt=\"code\"></p>\n<h2>My First Post</h2>\n<p>As a web developer when you are learning a new language the first thing we learn to do is output the string <code>hello world</code>.</p>\n<p>In 2017 one of my goals was to write more. I have found a tool will allow me to get my thoughts down quickly in <a href=\"https://masteringmarkdown.com/\">markdown</a> and publish live with one command from terminal.</p>\n<pre><code class=\"language-js\">yarn run deploy\n</code></pre>\n<h2>Gatsby</h2>\n<p>This tool is called <a href=\"https://github.com/gatsbyjs/gatsby\">Gatsby</a>.</p>\n<p>Gatsby allows you to transform plain text into dynamic blogs and websites using the latest web technologies. A <a href=\"https://facebook.github.io/react/\">React.js</a> static site generator.</p>\n<p>So the exciting thing for me is that I’ve also been wanting to learn Javascript deeper so I’ve settled with learning React as a way to reach my goal.</p>\n<h2>Blog Redesign</h2>\n<p>So after going through the <a href=\"https://www.lynda.com/React-js-tutorials/React-js-Essential-Training/496905-2.html\">React Essentials</a> Lynda course (which is excellent by the way) I decided to continue to explore using React by redesigning my blog using Gatsby.</p>\n<p>So here we are. Hope you like it.</p>\n<h2>Future Content</h2>\n<p>I love learning and will continue to share what I learn along the way and continue contributing to open source.</p>\n<p>I hope you find it helpful to read as it is for me to write my thoughts down.</p>\n"}
+	module.exports = {"path":"/404.html","layout":"page","body":"<h1>NOT FOUND</h1>\n<p>You just hit a route that doesn’t exist… the sadness.</p>\n"}
 
 /***/ }),
 /* 613 */
 /***/ (function(module, exports) {
 
-	module.exports = {"title":"Goals for 2017 ","date":"2017-02-25","layout":"post","path":"/goals-for-2017/","category":"Goals Commitment Resources Roadmaps","description":"Blogging is fun when you have a goals. These are mine for 2017.","readNext":"/postCSS/","body":"<p><img src=\"./coast.jpg\" alt=\"coast\"></p>\n<h2>Everyone has goals</h2>\n<p>As we started  a new year, it seems like everyone was talking about setting new years’ resolutions. A few months into the year many lose focus on what they wanted to achieve.</p>\n<p>So I am going to write them down here on my blog so I can stay commited to them and look back <strong>in case I get lost along the way</strong>.</p>\n<h3>Spiritual</h3>\n<p>Start with putting God first. I want to attend church weekly and attend a bible study.</p>\n<blockquote>\n<p>Seek the Kingdom of God above all else, and live righteously, and he will give you everything you need. <br>\n<strong>Matthew 6:33</strong></p>\n</blockquote>\n<h3>Family</h3>\n<p>A family outing and one date night a month. Good thing we have <strong>grandparents</strong> nearby!</p>\n<h3>Physical</h3>\n<p>Attend the local bootcamp at least twice a week.</p>\n<h3>Professional</h3>\n<ul>\n<li>Learn <s>React</s> Vue and full stack Javascript</li>\n<li>Learn to deploy apps on Dokku</li>\n</ul>\n<pre><code class=\"language-js\"><span class=\"hljs-comment\">// <span class=\"hljs-doctag\">TODO:</span> code every day</span>\n</code></pre>\n<h4>Learning Resources</h4>\n<ul>\n<li><a href=\"https://facebook.github.io/react/tutorial/tutorial.html\">Official Facebook Tutorial</a></li>\n<li><a href=\"https://laracasts.com/series/do-you-react\">Laracast React Course</a></li>\n<li><a href=\"https://www.lynda.com/React-js-tutorials/React-js-Essential-Training/496905-2.html\">Lynda React Essentails</a></li>\n<li><a href=\"https://www.lynda.com/React-js-tutorials/Learning-Redux/540345-2.html\">Lynda Learning Redux</a></li>\n<li><a href=\"https://online.reacttraining.com/p/reactjsfundamentals\">React Fundamentals</a></li>\n<li><a href=\"https://reactforbeginners.com/\">React for Beginners by Wes Bos</a></li>\n<li><a href=\"https://learnredux.com/\">Learn Redux by Wes Bos</a></li>\n<li><a href=\"https://frontendmasters.com/courses/react-intro/\">React Intro from Front End Masters</a></li>\n<li><a href=\"https://egghead.io/courses/build-a-react-native-todomvc-application\">React Native Todo MVC on egghead</a></li>\n<li><a href=\"https://egghead.io/courses/getting-started-with-redux\">Getting Started with Redux on egghead</a></li>\n<li><a href=\"https://www.robinwieruch.de/the-road-to-learn-react/\">Road to learn React ebook</a></li>\n<li><a href=\"https://github.com/enaqx/awesome-react\">Github Repo Full of Resources</a></li>\n<li><a href=\"https://medium.com/javascript-scene/top-javascript-frameworks-topics-to-learn-in-2017-700a397b711#.gsuwqiv2c\">Javascript Frameworks To Learn on medium</a></li>\n<li><a href=\"https://medium.freecodecamp.com/a-study-plan-to-cure-javascript-fatigue-8ad3a54f2eb1#.qi2xbx1gn\">Study plan to cure Javascript Fatigue on medium</a></li>\n</ul>\n"}
+	module.exports = {"title":"Hello World","date":"2017-02-24","layout":"post","path":"/hello-world/","category":"Beginning Blogging","description":"Blog redesign using Gatsby.","readNext":"/goals-for-2017","body":"<p><img src=\"./code.jpg\" alt=\"code\"></p>\n<h2>My First Post</h2>\n<p>As a web developer when you are learning a new language the first thing we learn to do is output the string <code>hello world</code>.</p>\n<p>In 2017 one of my goals was to write more. I have found a tool will allow me to get my thoughts down quickly in <a href=\"https://masteringmarkdown.com/\">markdown</a> and publish live with one command from terminal.</p>\n<pre><code class=\"language-js\">yarn run deploy\n</code></pre>\n<h2>Gatsby</h2>\n<p>This tool is called <a href=\"https://github.com/gatsbyjs/gatsby\">Gatsby</a>.</p>\n<p>Gatsby allows you to transform plain text into dynamic blogs and websites using the latest web technologies. A <a href=\"https://facebook.github.io/react/\">React.js</a> static site generator.</p>\n<p>So the exciting thing for me is that I’ve also been wanting to learn Javascript deeper so I’ve settled with learning React as a way to reach my goal.</p>\n<h2>Blog Redesign</h2>\n<p>So after going through the <a href=\"https://www.lynda.com/React-js-tutorials/React-js-Essential-Training/496905-2.html\">React Essentials</a> Lynda course (which is excellent by the way) I decided to continue to explore using React by redesigning my blog using Gatsby.</p>\n<p>So here we are. Hope you like it.</p>\n<h2>Future Content</h2>\n<p>I love learning and will continue to share what I learn along the way and continue contributing to open source.</p>\n<p>I hope you find it helpful to read as it is for me to write my thoughts down.</p>\n"}
 
 /***/ }),
 /* 614 */
 /***/ (function(module, exports) {
 
-	module.exports = {"title":"PostCSS","date":"2017-03-01","layout":"post","path":"/postCSS/","category":"CSS Frontend Tools","description":"So you're using SASS or LESS, but have you tried out PostCSS?","readNext":"/hello-world/","body":"<p><img src=\"./postcss.jpg\" alt=\"code\"></p>\n<h2>Working with PostCSS</h2>\n<p>I’ve been using <code>SASS</code> for quite some time now as my go to CSS pre-processor. It felt very familiar coming from vanilla CSS, or <strong>Cascading Style Sheets</strong> but gives you conveniances like:</p>\n<ul>\n<li>variables for colors, fonts, etc</li>\n<li>nesting!</li>\n<li>mixins</li>\n</ul>\n<p>I remember on my first project that I was introduced to SASS, I was impressed on how quickly I adopted it and became a fan.</p>\n<p>The only negative I could think of is that it requires a task runner to convert the SASS code into regular CSS that the browser could understand. At the time I was introduced to SASS we were using <code>grunt</code> as our task runner which later we replaced with <code>gulp</code> and now <code>webpack</code> is all the rage.</p>\n<p>This step was at first a manual process having to run things like <code>gulp sass</code> to run the sass transpilation but you could also set watchers to run anytime gulp detected changes in any .sass files.</p>\n<h2>What problem does PostCSS solve?</h2>\n<p>PostCSS has come along and become very popular. PostCSS is an engine for transforming CSS with Javascript. Since it using NodeJS, it claims to be <strong>3-30 times faster</strong> than the competition. SASS for example is built in Ruby and once you start adding gems can run a little bit slower. PostCSS is modular so at its core it is much smaller and you only add what you need.</p>\n<p>Another big difference is that it can also do post processing like add prefixes to a finished stylesheet. PostCSS has a large plug-in base so you can choose plug-ins like future CSS support, prefixing to support older browsers, and SASS-like features like nesting and variables.</p>\n<h2>Getting Started</h2>\n<p>PostCSS requires Node so you can install it on a mac with this brew command from terminal.</p>\n<pre><code class=\"language-terminal\">brew update\nbrew install <span class=\"hljs-keyword\">node</span>\n<span class=\"hljs-title\"></span></code></pre>\n<p>If you’re unfamiliar with brew, it is a package manager for macOS and you can learn more here.</p>\n<p><a href=\"https://brew.sh/\">Homebrew -the missing package manager for macOS</a></p>\n<h2>Installing PostCSS</h2>\n<p>Looking at the <a href=\"https://github.com/postcss/postcss\">github repo</a>, there are variuos instructions based on your build tool. Since I am using <a href=\"https://github.com/postcss/postcss-loader\">webpack</a>, we’ll start off by installing PostCSS with this command from terminal.</p>\n<pre><code class=\"language-terminal\">yarn <span class=\"hljs-keyword\">add</span><span class=\"bash\"> postcss-loader -D\n</span></code></pre>\n<p>We’ll configure our <code>webpack.config.js</code> like so:</p>\n<pre><code class=\"language-js\"><span class=\"hljs-built_in\">module</span>.exports = {\n    <span class=\"hljs-attr\">module</span>: {\n        <span class=\"hljs-attr\">loaders</span>: [\n            {\n                <span class=\"hljs-attr\">test</span>: <span class=\"hljs-regexp\">/\\.css$/</span>,\n                <span class=\"hljs-attr\">loaders</span>: [\n                    <span class=\"hljs-string\">'style-loader'</span>,\n                    <span class=\"hljs-string\">'css-loader?importLoaders=1'</span>,\n                    <span class=\"hljs-string\">'postcss-loader'</span>\n                ]\n            }\n        ]\n    }\n}\n</code></pre>\n<p>Then create a <code>postcss.config.js</code> file which contains your plugins. In the code block below, we have added the <strong>precss</strong> and <strong>autoprefixir</strong> plugins.</p>\n<pre><code class=\"language-js\"><span class=\"hljs-built_in\">module</span>.exports = {\n    <span class=\"hljs-attr\">plugins</span>: [\n        <span class=\"hljs-built_in\">require</span>(<span class=\"hljs-string\">'precss'</span>),\n        <span class=\"hljs-built_in\">require</span>(<span class=\"hljs-string\">'autoprefixer'</span>)\n    ]\n}\n</code></pre>\n<h2>PostCSS Plugins</h2>\n<p>If you’re curiuos to which plugins exists, you can checkout <a href=\"http://postcss.parts/\">PostCSS.parts</a> which is a searchable catalog of PostCSS plugins. Currently PostCSS has more than 200 plugins.</p>\n<p>Some popular PostCSS plugins are:</p>\n<ul>\n<li><a href=\"http://cssnano.co/\">cssnano</a>: compresses your css</li>\n<li><a href=\"https://github.com/postcss/autoprefixer\">autoprefixer</a>: parse css and add vendor prefixes</li>\n<li><a href=\"http://cssnext.io/\">cssnext</a>: use tomorrow’s css syntax, today</li>\n<li><a href=\"https://github.com/jonathantneal/precss\">preCSS</a>: Sass-like markup in your CSS files</li>\n<li><a href=\"https://github.com/peterramsing/lost\">lostGrid</a>: powerful grid system</li>\n</ul>\n<h2>Closing</h2>\n<p>I am excited to continue learning PostCSS as it feels like I am in the future. It is fast, modular, and lean. It requires some setup, but once you do, I hope you will be enjoy the experience as much as I do.</p>\n<h3>Further Learning</h3>\n<p>Ray Villalobos at Lynda has a great course on getting started with PostCSS named <a href=\"https://www.lynda.com/CSS-tutorials/PostCSS-First-Look/442850-2.html\">PostCSS: First Look</a>.</p>\n"}
+	module.exports = {"title":"Goals for 2017 ","date":"2017-02-25","layout":"post","path":"/goals-for-2017/","category":"Goals Commitment Resources Roadmaps","description":"Blogging is fun when you have a goals. These are mine for 2017.","readNext":"/postCSS/","body":"<p><img src=\"./coast.jpg\" alt=\"coast\"></p>\n<h2>Everyone has goals</h2>\n<p>As we started  a new year, it seems like everyone was talking about setting new years’ resolutions. A few months into the year many lose focus on what they wanted to achieve.</p>\n<p>So I am going to write them down here on my blog so I can stay commited to them and look back <strong>in case I get lost along the way</strong>.</p>\n<h3>Spiritual</h3>\n<p>Start with putting God first. I want to attend church weekly and attend a bible study.</p>\n<blockquote>\n<p>Seek the Kingdom of God above all else, and live righteously, and he will give you everything you need. <br>\n<strong>Matthew 6:33</strong></p>\n</blockquote>\n<h3>Family</h3>\n<p>A family outing and one date night a month. Good thing we have <strong>grandparents</strong> nearby!</p>\n<h3>Physical</h3>\n<p>Attend the local bootcamp at least twice a week.</p>\n<h3>Professional</h3>\n<ul>\n<li>Learn <s>React</s> Vue and full stack Javascript</li>\n<li>Learn to deploy apps on Dokku</li>\n</ul>\n<pre><code class=\"language-js\"><span class=\"hljs-comment\">// <span class=\"hljs-doctag\">TODO:</span> code every day</span>\n</code></pre>\n<h4>Learning Resources</h4>\n<ul>\n<li><a href=\"https://facebook.github.io/react/tutorial/tutorial.html\">Official Facebook Tutorial</a></li>\n<li><a href=\"https://laracasts.com/series/do-you-react\">Laracast React Course</a></li>\n<li><a href=\"https://www.lynda.com/React-js-tutorials/React-js-Essential-Training/496905-2.html\">Lynda React Essentails</a></li>\n<li><a href=\"https://www.lynda.com/React-js-tutorials/Learning-Redux/540345-2.html\">Lynda Learning Redux</a></li>\n<li><a href=\"https://online.reacttraining.com/p/reactjsfundamentals\">React Fundamentals</a></li>\n<li><a href=\"https://reactforbeginners.com/\">React for Beginners by Wes Bos</a></li>\n<li><a href=\"https://learnredux.com/\">Learn Redux by Wes Bos</a></li>\n<li><a href=\"https://frontendmasters.com/courses/react-intro/\">React Intro from Front End Masters</a></li>\n<li><a href=\"https://egghead.io/courses/build-a-react-native-todomvc-application\">React Native Todo MVC on egghead</a></li>\n<li><a href=\"https://egghead.io/courses/getting-started-with-redux\">Getting Started with Redux on egghead</a></li>\n<li><a href=\"https://www.robinwieruch.de/the-road-to-learn-react/\">Road to learn React ebook</a></li>\n<li><a href=\"https://github.com/enaqx/awesome-react\">Github Repo Full of Resources</a></li>\n<li><a href=\"https://medium.com/javascript-scene/top-javascript-frameworks-topics-to-learn-in-2017-700a397b711#.gsuwqiv2c\">Javascript Frameworks To Learn on medium</a></li>\n<li><a href=\"https://medium.freecodecamp.com/a-study-plan-to-cure-javascript-fatigue-8ad3a54f2eb1#.qi2xbx1gn\">Study plan to cure Javascript Fatigue on medium</a></li>\n</ul>\n"}
 
 /***/ }),
 /* 615 */
 /***/ (function(module, exports) {
 
-	module.exports = {"title":"World of Vue.js","date":"2017-03-12","layout":"post","path":"/vue/","category":"Javascript Vue.js","description":"Changing teams to Vue.js","readNext":"/goals-for-2017","body":"<p><img src=\"./vue.jpg\" alt=\"vue\"></p>\n<h2>Learning Javascript in 2017</h2>\n<p>Getting started on my goal to learn more Javascript in 2017, I decided to start my adventure with React.</p>\n<p>Having completed a couple tutorials, I was feeling pretty excited about React, its ecosystem, and its popularity in the Javascript world.</p>\n<p>One of my concerns was am I investing in the right Javascript framework? How do you know you are picking the right one when you haven’t experienced them all.</p>\n<blockquote>\n<p>My mentors told me that you just need to pick one and go with it.</p>\n</blockquote>\n<p>I was feeling a little fuzzy on my React training so launching this blog using React help solidy some of that knowledge.</p>\n<h2>And then there was Vue</h2>\n<p>Jeffrey Way had released a free series on <a href=\"https://vuejs.org/\">Vue.js</a> that had perked my interest. I feel that he is a great teacher and I have been a subscriber to <a href=\"https://laracasts.com/\">Laracasts</a> for a long time.</p>\n<p>I wanted a break from React and was curious on how it would be to build something using Vue.</p>\n<p>Right away I fell in love.</p>\n<p>There is no complicated setup. All you do is drop in one javascript tag and you are ready to go. No fancy setup required.</p>\n<pre><code class=\"language-js\">&lt;script src=<span class=\"hljs-string\">\"https://unpkg.com/vue\"</span>&gt;<span class=\"xml\"><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">script</span>&gt;</span></span>\n</code></pre>\n<p>Next, you’ll want to setup your template.</p>\n<h4>html</h4>\n<pre><code class=\"language-html\"><span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"app\"</span>&gt;</span>\n    {{ message }}\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n</code></pre>\n<h4>javascript</h4>\n<pre><code class=\"language-javascript\"><span class=\"hljs-keyword\">var</span> app = <span class=\"hljs-keyword\">new</span> Vue({\n    <span class=\"hljs-attr\">el</span>: <span class=\"hljs-string\">'#app'</span>,\n    <span class=\"hljs-attr\">data</span>: {\n        <span class=\"hljs-attr\">message</span>: <span class=\"hljs-string\">'Hello World'</span>\n    }\n})\n</code></pre>\n<p>Congrats you have just setup your first Vue app. We are telling Vue to connect to the id <code>app</code> and then we are passing in the data <code>message</code> using the mustache syntax <code>{{ message }}</code>.</p>\n<p>Vue.js is simple to work with and just makes sense. There is a clear separation from your markup, your logic, and styling. Contrasting React’s JSX, everything was jumbled up in there.</p>\n<p>Bonus: It doesn’t hurt that you have one of the best teacher’s with Jeffrey Way. I really recommend his free Vue.js 2 course entitled <a href=\"https://laracasts.com/series/learn-vue-2-step-by-step\">Learn Vue 2: Step By Step</a>.</p>\n<p>After completing the course I was so excited to learn more about Vue that I started reading a book named <a href=\"https://www.packtpub.com/web-development/learning-vuejs-2\">Learning Vue.js 2</a> by Olga Filipova.</p>\n<p><img src=\"./book.png\" alt=\"book\"></p>\n<p>This book was listed as one the resources from the <a href=\"https://github.com/vuejs/awesome-vue\">Awesome Vue</a> Github repo that has tons of Vue related resources.</p>\n<h2>Changing Teams</h2>\n<p>So now I have changed teams from React to Vue.</p>\n<p>My mentor says that either one you chose it will help you further your Javascript learning so these are in line with my professional goals.</p>\n<h2>Wrapping Up</h2>\n<p>I am enjoying the book so far and am excited to learn Vue deeper. I am typically a visual learner but it is refreshing going <strong>old school</strong> and reading an ebook. So far I have completed Chapter 2 and have learned a bunch so far. Some of the exercises are creating a Shopping List and a Pomodoro timer. I think you will enjoy learning and using Vue.js in your projects too.</p>\n"}
+	module.exports = {"title":"PostCSS","date":"2017-03-01","layout":"post","path":"/postCSS/","category":"CSS Frontend Tools","description":"So you're using SASS or LESS, but have you tried out PostCSS?","readNext":"/hello-world/","body":"<p><img src=\"./postcss.jpg\" alt=\"code\"></p>\n<h2>Working with PostCSS</h2>\n<p>I’ve been using <code>SASS</code> for quite some time now as my go to CSS pre-processor. It felt very familiar coming from vanilla CSS, or <strong>Cascading Style Sheets</strong> but gives you conveniances like:</p>\n<ul>\n<li>variables for colors, fonts, etc</li>\n<li>nesting!</li>\n<li>mixins</li>\n</ul>\n<p>I remember on my first project that I was introduced to SASS, I was impressed on how quickly I adopted it and became a fan.</p>\n<p>The only negative I could think of is that it requires a task runner to convert the SASS code into regular CSS that the browser could understand. At the time I was introduced to SASS we were using <code>grunt</code> as our task runner which later we replaced with <code>gulp</code> and now <code>webpack</code> is all the rage.</p>\n<p>This step was at first a manual process having to run things like <code>gulp sass</code> to run the sass transpilation but you could also set watchers to run anytime gulp detected changes in any .sass files.</p>\n<h2>What problem does PostCSS solve?</h2>\n<p>PostCSS has come along and become very popular. PostCSS is an engine for transforming CSS with Javascript. Since it using NodeJS, it claims to be <strong>3-30 times faster</strong> than the competition. SASS for example is built in Ruby and once you start adding gems can run a little bit slower. PostCSS is modular so at its core it is much smaller and you only add what you need.</p>\n<p>Another big difference is that it can also do post processing like add prefixes to a finished stylesheet. PostCSS has a large plug-in base so you can choose plug-ins like future CSS support, prefixing to support older browsers, and SASS-like features like nesting and variables.</p>\n<h2>Getting Started</h2>\n<p>PostCSS requires Node so you can install it on a mac with this brew command from terminal.</p>\n<pre><code class=\"language-terminal\">brew update\nbrew install <span class=\"hljs-keyword\">node</span>\n<span class=\"hljs-title\"></span></code></pre>\n<p>If you’re unfamiliar with brew, it is a package manager for macOS and you can learn more here.</p>\n<p><a href=\"https://brew.sh/\">Homebrew -the missing package manager for macOS</a></p>\n<h2>Installing PostCSS</h2>\n<p>Looking at the <a href=\"https://github.com/postcss/postcss\">github repo</a>, there are variuos instructions based on your build tool. Since I am using <a href=\"https://github.com/postcss/postcss-loader\">webpack</a>, we’ll start off by installing PostCSS with this command from terminal.</p>\n<pre><code class=\"language-terminal\">yarn <span class=\"hljs-keyword\">add</span><span class=\"bash\"> postcss-loader -D\n</span></code></pre>\n<p>We’ll configure our <code>webpack.config.js</code> like so:</p>\n<pre><code class=\"language-js\"><span class=\"hljs-built_in\">module</span>.exports = {\n    <span class=\"hljs-attr\">module</span>: {\n        <span class=\"hljs-attr\">loaders</span>: [\n            {\n                <span class=\"hljs-attr\">test</span>: <span class=\"hljs-regexp\">/\\.css$/</span>,\n                <span class=\"hljs-attr\">loaders</span>: [\n                    <span class=\"hljs-string\">'style-loader'</span>,\n                    <span class=\"hljs-string\">'css-loader?importLoaders=1'</span>,\n                    <span class=\"hljs-string\">'postcss-loader'</span>\n                ]\n            }\n        ]\n    }\n}\n</code></pre>\n<p>Then create a <code>postcss.config.js</code> file which contains your plugins. In the code block below, we have added the <strong>precss</strong> and <strong>autoprefixir</strong> plugins.</p>\n<pre><code class=\"language-js\"><span class=\"hljs-built_in\">module</span>.exports = {\n    <span class=\"hljs-attr\">plugins</span>: [\n        <span class=\"hljs-built_in\">require</span>(<span class=\"hljs-string\">'precss'</span>),\n        <span class=\"hljs-built_in\">require</span>(<span class=\"hljs-string\">'autoprefixer'</span>)\n    ]\n}\n</code></pre>\n<h2>PostCSS Plugins</h2>\n<p>If you’re curiuos to which plugins exists, you can checkout <a href=\"http://postcss.parts/\">PostCSS.parts</a> which is a searchable catalog of PostCSS plugins. Currently PostCSS has more than 200 plugins.</p>\n<p>Some popular PostCSS plugins are:</p>\n<ul>\n<li><a href=\"http://cssnano.co/\">cssnano</a>: compresses your css</li>\n<li><a href=\"https://github.com/postcss/autoprefixer\">autoprefixer</a>: parse css and add vendor prefixes</li>\n<li><a href=\"http://cssnext.io/\">cssnext</a>: use tomorrow’s css syntax, today</li>\n<li><a href=\"https://github.com/jonathantneal/precss\">preCSS</a>: Sass-like markup in your CSS files</li>\n<li><a href=\"https://github.com/peterramsing/lost\">lostGrid</a>: powerful grid system</li>\n</ul>\n<h2>Closing</h2>\n<p>I am excited to continue learning PostCSS as it feels like I am in the future. It is fast, modular, and lean. It requires some setup, but once you do, I hope you will be enjoy the experience as much as I do.</p>\n<h3>Further Learning</h3>\n<p>Ray Villalobos at Lynda has a great course on getting started with PostCSS named <a href=\"https://www.lynda.com/CSS-tutorials/PostCSS-First-Look/442850-2.html\">PostCSS: First Look</a>.</p>\n"}
 
 /***/ }),
 /* 616 */
 /***/ (function(module, exports) {
 
-	module.exports = {"title":"2017: Year in Review","date":"2017-12-15","layout":"post","path":"/year-in-review/","category":"reviews","description":"The year that went by too fast","readNext":"/goals-for-2017","body":"<p><img src=\"./fireworks.jpeg\" alt=\"fireworks\"></p>\n<h2>Looking Back</h2>\n<p>It’s hard to believe that Christmas is just a week away and we are almost done with 2017. This time of year, at least for me, is a time of reflection on the year gone by.</p>\n<h2>Challenges and Opportunities</h2>\n<h3>Selecting a JS Framework</h3>\n<p>For me, I knew that learning JavaScript was definately where my heart was leading me. But which framework to start with? I was overwhelmed and did what I thought was best and that was to spend a little time with each one.</p>\n<p>I started with Angular since it was hyped from VS Studio Live Conference I had attended in Austin, TX. It paired nicely with Typescript and seemed like many speakers at the conference where talking about it. I listened to <a href=\"https://twitter.com/deborahkurata\">Deborah Kurata</a> speak and how the Angular team all used vscode and how the Google team was working with the MS team. Seemed like a good place to start but I had found that it was not a rabbit hole that I wanted to go down.</p>\n<p>Next I moved onto Vue since Jeffrey Way had realeased a course on <a href=\"https://laracasts.com/series/learn-vue-2-step-by-step\">Learning Vue 2 Step by Step</a>. I really love Jeffrey’s teaching style and respect him as a teacher and a person.  I really liked how simple it was to get started. No complicated setup needed.</p>\n<p>Next I was introduced to Wes Bos and his online courses, some free and some paid. I found that he had great quality training after taking some of the 30 Day JS Challenge. I soon started his <a href=\"https://reactforbeginners.com/\">React for Beginner’s</a> course and really liked that React is just JS and felt that by learning React it was making me a better JS developer too.</p>\n<p>Then my coworker used React on one of our projects at work and I remember thinking this <strong>feels like magic</strong>. I was hooked ever since. I want to continue learning React in 2018 and this is where my heart is after trying the big three JS frameworks in 2017.</p>\n<p>I feel like it was good for me to at least try all 3. Not at the same time, but complete one project in one framework and see how it felt. Then you can make a decision on which one you like working with, wich one you feel comfortable with, and which one you are most productive with.</p>\n<h3>Dokku</h3>\n<p>I probably need to do a seperate blog post on <a href=\"http://dokku.viewdocs.io/dokku/\">Dokku</a> to give it justice.</p>\n<p>From the docs:</p>\n<blockquote>\n<p>Docker powered mini-Heroku. The smallest PaaS implementation you’ve ever seen.</p>\n</blockquote>\n<p>I had not worked with Heroku but have read that it makes deploying apps in whatever language dead simple.</p>\n<p>I was using <a href=\"https://forge.laravel.com/\">Forge</a> but I was limited to PHP based projects. Now that I am using Dokku, I can deploy apps in any language to my Digital Ocean droplet.</p>\n<h3>Interviews</h3>\n<p>My dev shop was hiring two developer positions and I was selected to be on the interview panel. It was the first time I had been on the other side of the table and was honored to be there. We were asked to come up with five questions and the panel, which consisted of four members would take turns asking questions.</p>\n<p>This experience helped me remember that this field is hard, and being put on the spot to answer technical questions can be daunting task to say the least. I have been in those shoes and know that it can be tough.</p>\n<p>I remember from being on a Army promotion board that even if you dont’ know the answer, say you know where to find the answer. Also enthusiasm goes along way. People skills are important since you will have to work with this person.</p>\n<h2>Best Upgrades</h2>\n<p>2017 had a many upgrades but these are top favs!</p>\n<h3>Standing Desk</h3>\n<p>I had the opportunity to get a standing desk for work. At first, I wasn’t sure if I even wanted it but I decided that I would give it a try.</p>\n<p>I had read of the benefits of standing and was trying to improve my health so this was a win for me.</p>\n<p>At first my legs would get weak and I could only stand for like maybe an hour or so. But after a few weeks, I was standing more and sitting less.</p>\n<p>Now I find that I am standing all morning, and then sit down for lunch and the afternoon.</p>\n<p>I also gave up my chair for a medicine ball and feel that I am working my core more now than just sitting in a chair.</p>\n<h3>Exercise as part of my routine</h3>\n<p>I wasn’t in the habit of working out and had found that I even when I went to the gym I wasn’t very seriuos about it.</p>\n<p>Now I am commited to working out as part of my day. There is no question of what my plans are for lunch. I know and plan on working out.</p>\n<p>I feel that this commmitment has help me focus more on my dev work and stay more healthy and balanced.</p>\n<h3>QHD monitor</h3>\n<p>I have had a dual-monitor setup for years but then I read the <a href=\"https://hackernoon.com/why-i-stopped-using-multiple-monitors-bfd87efa2e5b?gi=772d843779f6\">One Monitor Manifesto</a> and was ready to try something new. This is a great read if you haven’t checked it out and changed the way I thought about the multiple monitor productivity myth.</p>\n<p>I ended up selling the dual monitors for a single 25&quot; Quad HD Monitor. I really like the extra crisp display which is great for design work and easier on the eyes.</p>\n<p>I am finding that I am more focused keeping my apps opened at full-screen and either tabbing between them or keeping them organized on seperate virtual desktops.</p>\n<h2>What’s in Store for 2018</h2>\n<p>2018 is going to be a great year. Here are some things I am looking forward to in the new year.</p>\n<h3>React Nano Degree</h3>\n<p>I am excited to be taking Udacity’s React Nano Degree program. Like I had mentioned, I want to learn React deeper in 2018 so this will be a great way to start the year.</p>\n<p>The curriculum includes 3 modules and projects including:</p>\n<ul>\n<li>React Fundamentals(😃 duh)</li>\n<li>React and Redux</li>\n<li>React Native</li>\n</ul>\n<h2>CSS Grid</h2>\n<p>CSS Grid is the hot new layout spec and making its way to a browser near you. I am starting Wes Bos’s CSS Grid course which looks great. Also in the course we are using <strong>Firefox Developer Addition</strong> browser so I am looking forward to playing with something besides Chrome.</p>\n<h3>C# and .NET core</h3>\n<p>Since at work we are a .NET shop, it would be good for me to learn more C# and .NET. I am excited to see Microsoft is doing with .NET core which is cross-platform and open-source.</p>\n<p>I am in love with Visual Studio code as my editor and use Visual Studio at work.</p>\n"}
+	module.exports = {"title":"World of Vue.js","date":"2017-03-12","layout":"post","path":"/vue/","category":"Javascript Vue.js","description":"Changing teams to Vue.js","readNext":"/goals-for-2017","body":"<p><img src=\"./vue.jpg\" alt=\"vue\"></p>\n<h2>Learning Javascript in 2017</h2>\n<p>Getting started on my goal to learn more Javascript in 2017, I decided to start my adventure with React.</p>\n<p>Having completed a couple tutorials, I was feeling pretty excited about React, its ecosystem, and its popularity in the Javascript world.</p>\n<p>One of my concerns was am I investing in the right Javascript framework? How do you know you are picking the right one when you haven’t experienced them all.</p>\n<blockquote>\n<p>My mentors told me that you just need to pick one and go with it.</p>\n</blockquote>\n<p>I was feeling a little fuzzy on my React training so launching this blog using React help solidy some of that knowledge.</p>\n<h2>And then there was Vue</h2>\n<p>Jeffrey Way had released a free series on <a href=\"https://vuejs.org/\">Vue.js</a> that had perked my interest. I feel that he is a great teacher and I have been a subscriber to <a href=\"https://laracasts.com/\">Laracasts</a> for a long time.</p>\n<p>I wanted a break from React and was curious on how it would be to build something using Vue.</p>\n<p>Right away I fell in love.</p>\n<p>There is no complicated setup. All you do is drop in one javascript tag and you are ready to go. No fancy setup required.</p>\n<pre><code class=\"language-js\">&lt;script src=<span class=\"hljs-string\">\"https://unpkg.com/vue\"</span>&gt;<span class=\"xml\"><span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">script</span>&gt;</span></span>\n</code></pre>\n<p>Next, you’ll want to setup your template.</p>\n<h4>html</h4>\n<pre><code class=\"language-html\"><span class=\"hljs-tag\">&lt;<span class=\"hljs-name\">div</span> <span class=\"hljs-attr\">id</span>=<span class=\"hljs-string\">\"app\"</span>&gt;</span>\n    {{ message }}\n<span class=\"hljs-tag\">&lt;/<span class=\"hljs-name\">div</span>&gt;</span>\n</code></pre>\n<h4>javascript</h4>\n<pre><code class=\"language-javascript\"><span class=\"hljs-keyword\">var</span> app = <span class=\"hljs-keyword\">new</span> Vue({\n    <span class=\"hljs-attr\">el</span>: <span class=\"hljs-string\">'#app'</span>,\n    <span class=\"hljs-attr\">data</span>: {\n        <span class=\"hljs-attr\">message</span>: <span class=\"hljs-string\">'Hello World'</span>\n    }\n})\n</code></pre>\n<p>Congrats you have just setup your first Vue app. We are telling Vue to connect to the id <code>app</code> and then we are passing in the data <code>message</code> using the mustache syntax <code>{{ message }}</code>.</p>\n<p>Vue.js is simple to work with and just makes sense. There is a clear separation from your markup, your logic, and styling. Contrasting React’s JSX, everything was jumbled up in there.</p>\n<p>Bonus: It doesn’t hurt that you have one of the best teacher’s with Jeffrey Way. I really recommend his free Vue.js 2 course entitled <a href=\"https://laracasts.com/series/learn-vue-2-step-by-step\">Learn Vue 2: Step By Step</a>.</p>\n<p>After completing the course I was so excited to learn more about Vue that I started reading a book named <a href=\"https://www.packtpub.com/web-development/learning-vuejs-2\">Learning Vue.js 2</a> by Olga Filipova.</p>\n<p><img src=\"./book.png\" alt=\"book\"></p>\n<p>This book was listed as one the resources from the <a href=\"https://github.com/vuejs/awesome-vue\">Awesome Vue</a> Github repo that has tons of Vue related resources.</p>\n<h2>Changing Teams</h2>\n<p>So now I have changed teams from React to Vue.</p>\n<p>My mentor says that either one you chose it will help you further your Javascript learning so these are in line with my professional goals.</p>\n<h2>Wrapping Up</h2>\n<p>I am enjoying the book so far and am excited to learn Vue deeper. I am typically a visual learner but it is refreshing going <strong>old school</strong> and reading an ebook. So far I have completed Chapter 2 and have learned a bunch so far. Some of the exercises are creating a Shopping List and a Pomodoro timer. I think you will enjoy learning and using Vue.js in your projects too.</p>\n"}
 
 /***/ }),
 /* 617 */
 /***/ (function(module, exports) {
 
-	module.exports = {"title":"Goals for 2018","date":"2018-02-18","layout":"post","path":"/goals-for-2018/","category":"goals","description":"ONE THING for 2018","readNext":"/goals-for-2017","body":"<p><img src=\"./books.jpg\" alt=\"books\"></p>\n<h2>Intro</h2>\n<p>I have started reading books in 2018 and found a lost love I once had from high school. I saw a video from Dain Miller entitled <strong>“How to Improve as a Programmer - DON’T WRITE MORE CODE, READ MORE”</strong>.</p>\n<section>\n  <iframe class=\"lost-center\" width=\"560\" height=\"315\" src=\"https://www.youtube-nocookie.com/embed/moTlZBY66Ng?rel=0&amp;showinfo=0\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>\n</section>\n<p>After watching this inspirational video I was motivated to start the path to reading more, sleeping more, unplugging more, and being more focused and productive.</p>\n<p>I am currently reading <strong>“The One Thing: The Suprisingly Simple Truth Behind Extraordinary Results”</strong> by Gary Keller.</p>\n<p>This book is full of wisdom, productivity hacks, and lays out a plan to get extraordinary results written by the chairman of the board and cofounder of Keller Williams Realty, Inc. So this is one of the sources of inspiration for this post.</p>\n<p><img src=\"./dominos.jpg\" alt=\"dominos\"></p>\n<figure>\n<blockquote>\n  <p>What is the <em>One Thing</em> I can do such that by doing it everything else will be easier or unneccesary?</p>\n</blockquote>\n</figure>\n<h2>Read More</h2>\n<p>I want to read 12 books in 2018. This comes out to one book a month.</p>\n<p>I recently bought a used Kindle that I am hoping will help me with this goal. The reason I didn’t go with a tablet is that the Kindle is a dedicated reader. No social media, apps, etc to distract me.</p>\n<h3>Book List for 2018</h3>\n<ul>\n<li><strong>The Obstacle is the Way</strong> by Ryan Holiday</li>\n<li><strong>The One Thing</strong> by Gary Keller</li>\n<li><strong>Deep Work</strong> by Cal Newport</li>\n<li><strong>Anything You Want</strong> by Derek Silvers</li>\n<li><strong>12 Rules for Life: An Antidote for Choas</strong> by Jordan Peterson</li>\n<li><strong>The Pragmatic Programmer: From Journeyman to Master</strong> by Andy Hunt</li>\n<li><strong>Clean Code: A Handbook of Agile Software Craftsmanship</strong> by Robert C. Martin</li>\n<li><strong>The Selfish Gene</strong> by Richards Dawkins</li>\n<li><strong>Influence: The Psychology of Persuasion</strong> by Robert B. Cialdini</li>\n<li><strong>Bold: How to Go Big, Create Wealth and Impact the World</strong> by Peter H. Diamandis</li>\n<li><strong>The Happiness Hypothesis: Finding Modern Truth in Ancient Wisdom</strong> by Jonathan Haidt</li>\n<li><strong>The Introvert Advantage: How to Thrive in an Extrovert World</strong> by Marti Olsen Laney</li>\n</ul>\n<h2>Spiritual Life</h2>\n<p>Attend church weekly and attend a bible study. This is a great way to start off the week by putting God first and setting a good example for my boys. Read my bible every day before bed.</p>\n<h2>Physical Health</h2>\n<p>Hit the gym three times a week and sleep 8 hours a day. I pack my gym bag the night before so I have no excuses to not go. I am following Carl Yung’s habit of going to bed by 10pm and waking up by 7am and starting out the day in <em>Deep Work</em>. Afternoons are for <em>Shallow Work</em> (everything else). Evenings are for family time. Internet goes down by 10pm and phone is on <em>Do Not Disturb</em> mode.</p>\n<h2>Personal Life</h2>\n<p><img src=\"./trails.jpg\" alt=\"trails\"></p>\n<p>Plan a family outing and date night once a month.</p>\n<figure>\n<blockquote>\n  <p> Families who sweat together stay together</p>\n</blockquote>\n</figure>\n<h2>Professional</h2>\n<p>In 2017 I started my journey learning Javascript and in 2018 I will continue this journey.</p>\n<p>Currently enrolled in Udacity’s React Nano Degree. This covers React, Redux, and React Native.</p>\n<p>After completing the Nano Degree in by this Spring, I will be focusing on the following <strong>Frontend Masters</strong> courses for Summer and Fall.</p>\n<ul>\n<li>Complete Intro to React, v3 (feat. Redux, Router &amp; Flow)</li>\n<li>Advanced State Management in React (feat. Redux and MobX)</li>\n<li>Firebase + React: Real-time, Serverless Web Apps</li>\n<li>React Native (feat. Redux)</li>\n<li>Testing JavaScript Applications (feat. React and Redux)</li>\n</ul>\n<p>I also have queued up Kyle Simpons’ <strong>You Don’t Know JS</strong> series on my Kindle.</p>\n<h2>Financial</h2>\n<p>As a Dave Ramsey follower, we are on Baby Step 2 of <strong>The Total Money Makeover</strong>. We had a lot of life thrown at us in 2017 and we are working on paying down debt, sticking to a monthly zero-based budget, and a cash envelope system to help us stay on track. Old school but effective.</p>\n<h2>Conclusion</h2>\n<p>Blogging and writing more is also important to me so my goal will be one blog post a month.</p>\n<p>🤔 Writting down your goals are key to keeping them so maybe blogging them will be just as effective.</p>\n"}
+	module.exports = {"title":"2017: Year in Review","date":"2017-12-15","layout":"post","path":"/year-in-review/","category":"reviews","description":"The year that went by too fast","readNext":"/goals-for-2017","body":"<p><img src=\"./fireworks.jpeg\" alt=\"fireworks\"></p>\n<h2>Looking Back</h2>\n<p>It’s hard to believe that Christmas is just a week away and we are almost done with 2017. This time of year, at least for me, is a time of reflection on the year gone by.</p>\n<h2>Challenges and Opportunities</h2>\n<h3>Selecting a JS Framework</h3>\n<p>For me, I knew that learning JavaScript was definately where my heart was leading me. But which framework to start with? I was overwhelmed and did what I thought was best and that was to spend a little time with each one.</p>\n<p>I started with Angular since it was hyped from VS Studio Live Conference I had attended in Austin, TX. It paired nicely with Typescript and seemed like many speakers at the conference where talking about it. I listened to <a href=\"https://twitter.com/deborahkurata\">Deborah Kurata</a> speak and how the Angular team all used vscode and how the Google team was working with the MS team. Seemed like a good place to start but I had found that it was not a rabbit hole that I wanted to go down.</p>\n<p>Next I moved onto Vue since Jeffrey Way had realeased a course on <a href=\"https://laracasts.com/series/learn-vue-2-step-by-step\">Learning Vue 2 Step by Step</a>. I really love Jeffrey’s teaching style and respect him as a teacher and a person.  I really liked how simple it was to get started. No complicated setup needed.</p>\n<p>Next I was introduced to Wes Bos and his online courses, some free and some paid. I found that he had great quality training after taking some of the 30 Day JS Challenge. I soon started his <a href=\"https://reactforbeginners.com/\">React for Beginner’s</a> course and really liked that React is just JS and felt that by learning React it was making me a better JS developer too.</p>\n<p>Then my coworker used React on one of our projects at work and I remember thinking this <strong>feels like magic</strong>. I was hooked ever since. I want to continue learning React in 2018 and this is where my heart is after trying the big three JS frameworks in 2017.</p>\n<p>I feel like it was good for me to at least try all 3. Not at the same time, but complete one project in one framework and see how it felt. Then you can make a decision on which one you like working with, wich one you feel comfortable with, and which one you are most productive with.</p>\n<h3>Dokku</h3>\n<p>I probably need to do a seperate blog post on <a href=\"http://dokku.viewdocs.io/dokku/\">Dokku</a> to give it justice.</p>\n<p>From the docs:</p>\n<blockquote>\n<p>Docker powered mini-Heroku. The smallest PaaS implementation you’ve ever seen.</p>\n</blockquote>\n<p>I had not worked with Heroku but have read that it makes deploying apps in whatever language dead simple.</p>\n<p>I was using <a href=\"https://forge.laravel.com/\">Forge</a> but I was limited to PHP based projects. Now that I am using Dokku, I can deploy apps in any language to my Digital Ocean droplet.</p>\n<h3>Interviews</h3>\n<p>My dev shop was hiring two developer positions and I was selected to be on the interview panel. It was the first time I had been on the other side of the table and was honored to be there. We were asked to come up with five questions and the panel, which consisted of four members would take turns asking questions.</p>\n<p>This experience helped me remember that this field is hard, and being put on the spot to answer technical questions can be daunting task to say the least. I have been in those shoes and know that it can be tough.</p>\n<p>I remember from being on a Army promotion board that even if you dont’ know the answer, say you know where to find the answer. Also enthusiasm goes along way. People skills are important since you will have to work with this person.</p>\n<h2>Best Upgrades</h2>\n<p>2017 had a many upgrades but these are top favs!</p>\n<h3>Standing Desk</h3>\n<p>I had the opportunity to get a standing desk for work. At first, I wasn’t sure if I even wanted it but I decided that I would give it a try.</p>\n<p>I had read of the benefits of standing and was trying to improve my health so this was a win for me.</p>\n<p>At first my legs would get weak and I could only stand for like maybe an hour or so. But after a few weeks, I was standing more and sitting less.</p>\n<p>Now I find that I am standing all morning, and then sit down for lunch and the afternoon.</p>\n<p>I also gave up my chair for a medicine ball and feel that I am working my core more now than just sitting in a chair.</p>\n<h3>Exercise as part of my routine</h3>\n<p>I wasn’t in the habit of working out and had found that I even when I went to the gym I wasn’t very seriuos about it.</p>\n<p>Now I am commited to working out as part of my day. There is no question of what my plans are for lunch. I know and plan on working out.</p>\n<p>I feel that this commmitment has help me focus more on my dev work and stay more healthy and balanced.</p>\n<h3>QHD monitor</h3>\n<p>I have had a dual-monitor setup for years but then I read the <a href=\"https://hackernoon.com/why-i-stopped-using-multiple-monitors-bfd87efa2e5b?gi=772d843779f6\">One Monitor Manifesto</a> and was ready to try something new. This is a great read if you haven’t checked it out and changed the way I thought about the multiple monitor productivity myth.</p>\n<p>I ended up selling the dual monitors for a single 25&quot; Quad HD Monitor. I really like the extra crisp display which is great for design work and easier on the eyes.</p>\n<p>I am finding that I am more focused keeping my apps opened at full-screen and either tabbing between them or keeping them organized on seperate virtual desktops.</p>\n<h2>What’s in Store for 2018</h2>\n<p>2018 is going to be a great year. Here are some things I am looking forward to in the new year.</p>\n<h3>React Nano Degree</h3>\n<p>I am excited to be taking Udacity’s React Nano Degree program. Like I had mentioned, I want to learn React deeper in 2018 so this will be a great way to start the year.</p>\n<p>The curriculum includes 3 modules and projects including:</p>\n<ul>\n<li>React Fundamentals(😃 duh)</li>\n<li>React and Redux</li>\n<li>React Native</li>\n</ul>\n<h2>CSS Grid</h2>\n<p>CSS Grid is the hot new layout spec and making its way to a browser near you. I am starting Wes Bos’s CSS Grid course which looks great. Also in the course we are using <strong>Firefox Developer Addition</strong> browser so I am looking forward to playing with something besides Chrome.</p>\n<h3>C# and .NET core</h3>\n<p>Since at work we are a .NET shop, it would be good for me to learn more C# and .NET. I am excited to see Microsoft is doing with .NET core which is cross-platform and open-source.</p>\n<p>I am in love with Visual Studio code as my editor and use Visual Studio at work.</p>\n"}
 
 /***/ }),
 /* 618 */
 /***/ (function(module, exports) {
 
-	module.exports = {"title":"Top 3 Gartner Application Conference Takeaways","date":"2018-12-10","layout":"post","path":"/top3-gartner-takeaways/","category":"vision trends","description":"Takeaways from my recent trip to the Gartner Application Summit at Las Vegas.","readNext":"/goals-for-2018","body":"<p><img src=\"./gartner-2018.png\" alt=\"gartner\"></p>\n<h2>2018 Gartner Application Strategies and Solutions Summit</h2>\n<p>This Fall I got to go to the Gartner Application Summit held in Las Vegas.</p>\n<p>This was my first Gartner conference and my first time in Las Vegas.</p>\n<p>While the experience of being on the strip was overwhelming and over-stimulating, I did learn a lot of exciting new concepts and methodoligies at the conference.</p>\n<h2>Top 3 Takeaways</h2>\n<h3>1. 👑 Agile is King</h3>\n<p><img src=\"./agile-definition.png\" alt=\"agile definition\"></p>\n<blockquote>\n<p>Netflix is famous for the ability to roll out thousands of changes a day</p>\n</blockquote>\n<p><img src=\"./agile-team.png\" alt=\"agile teams\"></p>\n<p>Everything depends on Agile. Waterfall is out and without Agile, everything else is impossible or very difficult. Agile is the key to open up the paths for these new ideas.</p>\n<ul>\n<li>Agile helps you deal with <em>chaos by embracing it</em></li>\n<li>always delivering value</li>\n<li>allows for continous integration &amp; devops</li>\n</ul>\n<h3>2. Productology</h3>\n<p><img src=\"./product-shift.png\" alt=\"productology shift\"></p>\n<p><strong>Productology</strong> is the art and science of delivering products in the digital age.</p>\n<p><img src=\"./product-changes.png\" alt=\"product changes\"></p>\n<p>Some of the benefits of product-cetric design are</p>\n<ul>\n<li>outcome-based</li>\n<li>deliver capabilities over time</li>\n<li>ownership &amp; accountability</li>\n<li>teams stay together</li>\n<li>empathy with customers &amp; colleagues</li>\n</ul>\n<h3>🔥 3. Power of Culture</h3>\n<p>The final keynote was titled <strong>“Architect Your Digital Ecosystem”</strong></p>\n<p><img src=\"./culture-responsibility.png\" alt=\"culture responsibility\"></p>\n<p>It was on the culture of <a href=\"https://data.mx.com/\">MX</a>. They empowered their team to just do the work. They had cool metrics on big screens. Team members loved working there and were filled with passion about the work. They felt they could make changes and get them in production on the same day. They rallied around their cause. The founder was in the trenches with the workers and they loved that he was doing the same work that they did.</p>\n<p><img src=\"./culture-the-why.png\" alt=\"culture the why\"></p>\n<p>One of the leaders was diagnosed with a late stage cancer and had only weeks or months to live, and the team worked on the weekend to found our more about the cause, courses of actions, list the best doctors, to help save their leader.</p>\n<h2>Honorable Mentions</h2>\n<ul>\n<li>API-Centric Design</li>\n<li>CI Pipeline</li>\n<li>PWAs</li>\n</ul>\n<h2>Conclusion</h2>\n<p>After attending this conference, your heart is set on fire and you want to implement all these new trends.</p>\n<p>While I am not in a leadership position, I feel that I can implement change at my level.</p>\n<p>I am so glad that I was able to attend the conference. My heart is fire to disrupt our current rhythm and implement change.</p>\n"}
+	module.exports = {"title":"Goals for 2018","date":"2018-02-18","layout":"post","path":"/goals-for-2018/","category":"goals","description":"ONE THING for 2018","readNext":"/goals-for-2017","body":"<p><img src=\"./books.jpg\" alt=\"books\"></p>\n<h2>Intro</h2>\n<p>I have started reading books in 2018 and found a lost love I once had from high school. I saw a video from Dain Miller entitled <strong>“How to Improve as a Programmer - DON’T WRITE MORE CODE, READ MORE”</strong>.</p>\n<section>\n  <iframe class=\"lost-center\" width=\"560\" height=\"315\" src=\"https://www.youtube-nocookie.com/embed/moTlZBY66Ng?rel=0&amp;showinfo=0\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>\n</section>\n<p>After watching this inspirational video I was motivated to start the path to reading more, sleeping more, unplugging more, and being more focused and productive.</p>\n<p>I am currently reading <strong>“The One Thing: The Suprisingly Simple Truth Behind Extraordinary Results”</strong> by Gary Keller.</p>\n<p>This book is full of wisdom, productivity hacks, and lays out a plan to get extraordinary results written by the chairman of the board and cofounder of Keller Williams Realty, Inc. So this is one of the sources of inspiration for this post.</p>\n<p><img src=\"./dominos.jpg\" alt=\"dominos\"></p>\n<figure>\n<blockquote>\n  <p>What is the <em>One Thing</em> I can do such that by doing it everything else will be easier or unneccesary?</p>\n</blockquote>\n</figure>\n<h2>Read More</h2>\n<p>I want to read 12 books in 2018. This comes out to one book a month.</p>\n<p>I recently bought a used Kindle that I am hoping will help me with this goal. The reason I didn’t go with a tablet is that the Kindle is a dedicated reader. No social media, apps, etc to distract me.</p>\n<h3>Book List for 2018</h3>\n<ul>\n<li><strong>The Obstacle is the Way</strong> by Ryan Holiday</li>\n<li><strong>The One Thing</strong> by Gary Keller</li>\n<li><strong>Deep Work</strong> by Cal Newport</li>\n<li><strong>Anything You Want</strong> by Derek Silvers</li>\n<li><strong>12 Rules for Life: An Antidote for Choas</strong> by Jordan Peterson</li>\n<li><strong>The Pragmatic Programmer: From Journeyman to Master</strong> by Andy Hunt</li>\n<li><strong>Clean Code: A Handbook of Agile Software Craftsmanship</strong> by Robert C. Martin</li>\n<li><strong>The Selfish Gene</strong> by Richards Dawkins</li>\n<li><strong>Influence: The Psychology of Persuasion</strong> by Robert B. Cialdini</li>\n<li><strong>Bold: How to Go Big, Create Wealth and Impact the World</strong> by Peter H. Diamandis</li>\n<li><strong>The Happiness Hypothesis: Finding Modern Truth in Ancient Wisdom</strong> by Jonathan Haidt</li>\n<li><strong>The Introvert Advantage: How to Thrive in an Extrovert World</strong> by Marti Olsen Laney</li>\n</ul>\n<h2>Spiritual Life</h2>\n<p>Attend church weekly and attend a bible study. This is a great way to start off the week by putting God first and setting a good example for my boys. Read my bible every day before bed.</p>\n<h2>Physical Health</h2>\n<p>Hit the gym three times a week and sleep 8 hours a day. I pack my gym bag the night before so I have no excuses to not go. I am following Carl Yung’s habit of going to bed by 10pm and waking up by 7am and starting out the day in <em>Deep Work</em>. Afternoons are for <em>Shallow Work</em> (everything else). Evenings are for family time. Internet goes down by 10pm and phone is on <em>Do Not Disturb</em> mode.</p>\n<h2>Personal Life</h2>\n<p><img src=\"./trails.jpg\" alt=\"trails\"></p>\n<p>Plan a family outing and date night once a month.</p>\n<figure>\n<blockquote>\n  <p> Families who sweat together stay together</p>\n</blockquote>\n</figure>\n<h2>Professional</h2>\n<p>In 2017 I started my journey learning Javascript and in 2018 I will continue this journey.</p>\n<p>Currently enrolled in Udacity’s React Nano Degree. This covers React, Redux, and React Native.</p>\n<p>After completing the Nano Degree in by this Spring, I will be focusing on the following <strong>Frontend Masters</strong> courses for Summer and Fall.</p>\n<ul>\n<li>Complete Intro to React, v3 (feat. Redux, Router &amp; Flow)</li>\n<li>Advanced State Management in React (feat. Redux and MobX)</li>\n<li>Firebase + React: Real-time, Serverless Web Apps</li>\n<li>React Native (feat. Redux)</li>\n<li>Testing JavaScript Applications (feat. React and Redux)</li>\n</ul>\n<p>I also have queued up Kyle Simpons’ <strong>You Don’t Know JS</strong> series on my Kindle.</p>\n<h2>Financial</h2>\n<p>As a Dave Ramsey follower, we are on Baby Step 2 of <strong>The Total Money Makeover</strong>. We had a lot of life thrown at us in 2017 and we are working on paying down debt, sticking to a monthly zero-based budget, and a cash envelope system to help us stay on track. Old school but effective.</p>\n<h2>Conclusion</h2>\n<p>Blogging and writing more is also important to me so my goal will be one blog post a month.</p>\n<p>🤔 Writting down your goals are key to keeping them so maybe blogging them will be just as effective.</p>\n"}
 
 /***/ }),
 /* 619 */
+/***/ (function(module, exports) {
+
+	module.exports = {"title":"Top 3 Gartner Application Conference Takeaways","date":"2018-12-10","layout":"post","path":"/top3-gartner-takeaways/","category":"vision trends","description":"Takeaways from my recent trip to the Gartner Application Summit at Las Vegas.","readNext":"/goals-for-2018","body":"<p><img src=\"./gartner-2018.png\" alt=\"gartner\"></p>\n<h2>2018 Gartner Application Strategies and Solutions Summit</h2>\n<p>This Fall I got to go to the Gartner Application Summit held in Las Vegas.</p>\n<p>This was my first Gartner conference and my first time in Las Vegas.</p>\n<p>While the experience of being on the strip was overwhelming and over-stimulating, I did learn a lot of exciting new concepts and methodoligies at the conference.</p>\n<h2>Top 3 Takeaways</h2>\n<h3>1. 👑 Agile is King</h3>\n<p><img src=\"./agile-definition.png\" alt=\"agile definition\"></p>\n<blockquote>\n<p>Netflix is famous for the ability to roll out thousands of changes a day</p>\n</blockquote>\n<p><img src=\"./agile-team.png\" alt=\"agile teams\"></p>\n<p>Everything depends on Agile. Waterfall is out and without Agile, everything else is impossible or very difficult. Agile is the key to open up the paths for these new ideas.</p>\n<ul>\n<li>Agile helps you deal with <em>chaos by embracing it</em></li>\n<li>always delivering value</li>\n<li>allows for continous integration &amp; devops</li>\n</ul>\n<h3>2. Productology</h3>\n<p><img src=\"./product-shift.png\" alt=\"productology shift\"></p>\n<p><strong>Productology</strong> is the art and science of delivering products in the digital age.</p>\n<p><img src=\"./product-changes.png\" alt=\"product changes\"></p>\n<p>Some of the benefits of product-cetric design are</p>\n<ul>\n<li>outcome-based</li>\n<li>deliver capabilities over time</li>\n<li>ownership &amp; accountability</li>\n<li>teams stay together</li>\n<li>empathy with customers &amp; colleagues</li>\n</ul>\n<h3>🔥 3. Power of Culture</h3>\n<p>The final keynote was titled <strong>“Architect Your Digital Ecosystem”</strong></p>\n<p><img src=\"./culture-responsibility.png\" alt=\"culture responsibility\"></p>\n<p>It was on the culture of <a href=\"https://data.mx.com/\">MX</a>. They empowered their team to just do the work. They had cool metrics on big screens. Team members loved working there and were filled with passion about the work. They felt they could make changes and get them in production on the same day. They rallied around their cause. The founder was in the trenches with the workers and they loved that he was doing the same work that they did.</p>\n<p><img src=\"./culture-the-why.png\" alt=\"culture the why\"></p>\n<p>One of the leaders was diagnosed with a late stage cancer and had only weeks or months to live, and the team worked on the weekend to found our more about the cause, courses of actions, list the best doctors, to help save their leader.</p>\n<h2>Honorable Mentions</h2>\n<ul>\n<li>API-Centric Design</li>\n<li>CI Pipeline</li>\n<li>PWAs</li>\n</ul>\n<h2>Conclusion</h2>\n<p>After attending this conference, your heart is set on fire and you want to implement all these new trends.</p>\n<p>While I am not in a leadership position, I feel that I can implement change at my level.</p>\n<p>I am so glad that I was able to attend the conference. My heart is fire to disrupt our current rhythm and implement change.</p>\n"}
+
+/***/ }),
+/* 620 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -51161,7 +51052,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _SitePost2 = _interopRequireDefault(_SitePost);
 
-	var _SiteSidebar = __webpack_require__(595);
+	var _SiteSidebar = __webpack_require__(596);
 
 	var _SiteSidebar2 = _interopRequireDefault(_SiteSidebar);
 
@@ -51265,25 +51156,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ }),
-/* 620 */
+/* 621 */
 /***/ (function(module, exports) {
 
 	module.exports = {"title":"About Me","layout":"page","path":"/about","body":"<p><img src=\"./family.jpg\" alt=\"family\"></p>\n<p>My name is Frank Pigeon Jr. I am a father of three boys, husband to my <a href=\"https://twitter.com/kay_pigeon\">beautiful wife</a>, and a front end web developer.</p>\n<p>I was born in San Antonio, Texas and grew up in the tropical country of Panama.</p>\n<p>I am a U.S. Army veteran and am still serving my country as a Dept. of Army Civilian.</p>\n<p>I enjoy coding, photography, audio/video production, and all-things open-source.</p>\n<p>I am the owner of a freelance business <a href=\"http://pigeontec.com\">Pigeontec</a> which is a single person Digital Agency.</p>\n"}
 
 /***/ }),
-/* 621 */
+/* 622 */
 /***/ (function(module, exports) {
 
 	module.exports = {"title":"Portfolio","layout":"page","path":"/portfolio","body":"<h2>Catch of the Day</h2>\n<p><img src=\"./cotd.png\" alt=\"cotd\"></p>\n<p>Real-time web application for a fictional trendy seafood market where price and quantity available can change at a moment’s notice. Includes a build a menu, an order form, and an inventory management area where authorized users can immediately update product details. Built with React, ES6, React Router 4, and Firebase.</p>\n<p><a href=\"http://catch-of-the-day.pigeontec.com\">View Live</a> <br>\n<a href=\"https://github.com/fpigeonjr/reactForBeginners\">View Github</a></p>\n<h2>David Portillo Tenor</h2>\n<p><img src=\"./portillo.jpg\" alt=\"david portillo tenor\"></p>\n<p>Client work for opera singer David Portillo. Web Design and development that includes a calendar of upcoming perfomances, media gallery, acclaims, and biography pages. Built with Jekyll and hosted on Github.</p>\n<p><a href=\"https://github.com/davidportillo/tenorwebsite\">View Github</a> <br>\n<a href=\"http://davidportillotenor.com/\">View Live</a></p>\n<h2>Sean Dorr Portfolio</h2>\n<p><img src=\"./seandorr.jpg\" alt=\"sean dorr\"></p>\n<p>Client work for graphic artist and designer Sean Dorr’s portfolio website. Web Design and Development. Built with Jekyll and hosted on Github.</p>\n<p><a href=\"https://github.com/seandorr/designer-portfolio\">View Github</a> <br>\n<a href=\"http://seandorr.com/\">View Live</a></p>\n<h2>Community Helpers</h2>\n<p><img src=\"./comm_helpers.jpg\" alt=\"community helpers\"></p>\n<p>Web application that connects seniors that need work done around their home and the youth that want to earn some extra money. Built using Laravel, PHP, MySQL, JavaScript, jQuery, and Twitter Bootstrap. Development done in a Vagrant environment. Version control using Git and GitHub. Features a helper/giver dashboard, a job listing for helpers to apply to, and giving the power to the giver to select a helper based on their jobs completed and reviews.</p>\n<p><a href=\"https://github.com/fpigeon/blog.dev\">View Github</a> <br>\n<a href=\"http://community-helpers.com/\">View Live</a></p>\n<h2>Todo List</h2>\n<p><img src=\"./todo.jpg\" alt=\"todo list\"></p>\n<p>The application was built using PHP, MySQL, HTML and CSS and it allows for adding new items, removing completed items, and uploading a todo list.</p>\n<p><a href=\"https://github.com/fpigeon/Web_Todo_List\">View Github</a></p>\n<h2>Address Book</h2>\n<p><img src=\"./address.jpg\" alt=\"address book\"></p>\n<p>The application was built using PHP, MySQL, HTML and CSS and it allows for adding new addresses, removing completed addresses, and uploading an exisiting address book.</p>\n<p><a href=\"https://github.com/fpigeon/Codeup_Web_Exercises/blob/master/public/address_book.php\">View Github</a></p>\n<h2>Whack-A-Mole</h2>\n<p><img src=\"./whack_a_mole.jpg\" alt=\"whack a mole\"></p>\n<p>First-person video game based on the classic whack-a-mole game. The game randomly has moles pop out of holes and the object of the game is to hit the moles and have them go back in their hole. The application features the ability to keep score, maintain a high-score, and a countdown timer. Written in PHP, JavaScript, and jQuery.</p>\n<p><a href=\"https://github.com/fpigeon/Codeup_Web_Exercises/blob/master/public/whack.html\">View Github</a></p>\n<h2>High Low game</h2>\n<p><img src=\"./code.jpg\" alt=\"code\"></p>\n<p>The game picks a random number between 1 and 100. It prompts the user to take a guess and outputs higher, lower, or good guess. Written in PHP.</p>\n<p><a href=\"https://github.com/fpigeon/High_Low\">View Github</a></p>\n<h2>Fizz Buzz</h2>\n<p><img src=\"./code.jpg\" alt=\"code\"></p>\n<p>The application prints the numbers from 1 to 100. But for multiples of three print “Fizz” instead of the number and for the multiples of five print “Buzz”. For numbers which are multiples of both three and five print “FizzBuzz”. Written in PHP.</p>\n<p><a href=\"https://github.com/fpigeon/CodeUp_Exercises/blob/master/fizzbuzz.php\">View Github</a></p>\n<h2>CS Classwork</h2>\n<p><img src=\"./regis.jpg\" alt=\"Regis CS Work\"></p>\n<p>Check out my project exercises for the Computer Science courses I completed at Regis University. Written in C++.</p>\n<p><a href=\"https://github.com/fpigeon/Regis-University-CS-classwork\">View Github</a></p>\n"}
 
 /***/ }),
-/* 622 */
+/* 623 */
 /***/ (function(module, exports) {
 
 	module.exports = {"title":"Resume","layout":"resume","path":"/resume","body":"<div class=\"summary-box\">\n    <h3 class=\"summary-h3 text-center\">Summary</h3>\n    <p class=\"summary-p\">\n        With over 15 years of IT experience, I'm broadening my horizons into web and mobile development. I'm a U.S. Army veteran, hold a SECRET clearance, and have a Bachelor's Degree in Management, Computer Information Systems. I am fluent in English and Spanish, a focused team player, a lifetime learner, and am excited to take on new challenges that combine my creativity and business sense.\n    </p>\n</div>\n<p><h2 class=\"section-h2\"><i class=\"fa fa-briefcase\"></i> Work Experience</h2></p>\n<h4>AUG 2015 - Present</h4>\n<p class=\"position\">Web Developer, Dept. of Army - San Antonio, TX</p>\n<ul>\n<li>Frontend web design and development for public facing websites and applications</li>\n<li>Led adoption of version control, design guidelines, and modern web practices</li>\n<li>Frontend design and development using HTML, CSS, JavaScript, React, and the Adobe CC Suite</li>\n</ul>\n<h4>NOV 2014 - AUG 2015</h4>\n<p class=\"position\">Web Developer, AM Digital - Ft. Worth, TX</p>\n<ul>\n<li>Full stack web development using Linux, Apache, MySQL, and PHP</li>\n<li>Part of the web development team for the <a href=\"http://am.digital/\">AM Digital Agency</a></li>\n</ul>\n<h4>MAY 2014 - Present</h4>\n<p class=\"position\">Freelance Web Developer, Self - San Antonio, TX</p>\n<ul>\n<li>Owner of <a href=\"http://pigeontec.com\">Pigeontec</a>, a single person Digital Agency</li>\n<li>Full stack web design and development</li>\n</ul>\n<h4>Previous Experience</h4>\n<ul>\n<li>IT Project Manager and IT Customer Support for Dept.of Army</li>\n<li>Served as a 74B Computer Operator/Analyst in the U.S. Army</li>\n</ul>\n<p><h2 class=\"section-h2\"><i class=\"fa fa-graduation-cap\"></i> Education</h2></p>\n<h4>Codeup</h4>\n<p class=\"project-p\">\n    Full stack web development bootcamp using the LAMP stack\n</p>\n<h4>Regis University</h4>\n<p class=\"project-p\">\n    4 Computer Science Leveling Courses\n</p>\n<h4>Park University</h4>\n<p class=\"project-p\">\n    B.S., Management, Computer Information Systems\n</p>\n<h4>Kansas City Kansas Community College</h4>\n<p class=\"project-p\">\n    A.A.S., Computer Information Systems\n</p>\n"}
 
 /***/ }),
-/* 623 */
+/* 624 */
 /***/ (function(module, exports) {
 
 	module.exports = {"title":"These Are Some Of The Things I Use","layout":"page","path":"/uses","body":"<h2>Editor + Terminal</h2>\n<p><img src=\"./vscode.png\" alt=\"vscode\"></p>\n<p>I have been using <a href=\"https://code.visualstudio.com/\">Visual Studio Code</a> as my code editor for over a year now and have been very happy with it. Probably my favorite electron app by far. My favorite color themes are <a href=\"https://www.monokai.pro/vscode/\">Monokia Pro</a>, <a href=\"https://draculatheme.com/visual-studio-code/\">Dracula</a>, <a href=\"https://github.com/rmarganti/vsc-material-facebook-theme\">Material Facebook</a>, and <a href=\"https://github.com/wesbos/cobalt2-vscode\">Cobalt2</a>. My favorite font is <a href=\"https://www.typography.com/fonts/operator/webfonts/operatormono-medium/\">Operator Mono</a>.</p>\n<p><img src=\"./iterm.png\" alt=\"iterm\"></p>\n<p>For my terminal, I have stuck with <a href=\"https://www.iterm2.com/\">iTerm2</a>. It is reliable, customizable, and just works. I go fullscreen with a slight transparency. I also use <a href=\"https://github.com/robbyrussell/oh-my-zsh\">oh-my-zshell</a>, <a href=\"https://github.com/sindresorhus/pure\">pure-prompt</a>, with the <a href=\"https://github.com/slwen/facebook-iterm-theme\">facebook theme</a>. I played around with Hyper but had some issues so I switched back.</p>\n<h2>Hardware</h2>\n<p><img src=\"./setup.jpg\" alt=\"setup\"></p>\n<p>Bought my first macintosh due to it being a requirement for my <a href=\"http://codeup.com\">coding bootcamp</a>. It is a <a href=\"https://support.apple.com/kb/sp653?locale=en_US\">2012 15&quot; retina macbook pro</a> sitting ontop of a <a href=\"http://a.co/e4cHHEA\">Rain Laptop Stand</a>. This has been my workhorse ever since I started coding and really enjoy working on mac. It is the closest we can get to linux but still having access to apps like Adobe’s Creative Cloud.</p>\n<p>I recently sold my dual monitor setup and replaced it with a single <a href=\"https://www.amazon.com/dp/B00SPWPF1O/_encoding=UTF8?coliid=I2CTU0GMXJ7G9U&amp;colid=1SW4HY14FLX9F&amp;psc=0\">Dell UltraSharp U2515H 25-Inch Monitor</a> after reading <a href=\"https://hackernoon.com/why-i-stopped-using-multiple-monitors-bfd87efa2e5b\">A Single Monitor Manifesto</a> by <a href=\"https://twitter.com/housecor\">Cory House</a>. It made a lot sense to me and am happy with the new setup. This new setup helps me stay focused on the task at hand and avoid distractions.</p>\n<p>I own a <a href=\"http://a.co/1F7pfgq\">Logitech HD Laptop Webcam C615</a> for webchats and music recordings.</p>\n<p>We also recently bought <a href=\"http://a.co/cbymmBu\">Disney’s Circle</a> which is an amazing device that helps keep time limits on our children’s internet time.</p>\n<h2>Other</h2>\n<p>I use <a href=\"https://keep.google.com/\">Google Keep</a> for my daily todos.</p>\n<p>I use <a href=\"https://trello.com/\">Trello</a> for project management tasks for any given project.</p>\n<p>My team uses <a href=\"https://slack.com/\">Slack</a> for office communications. The goal being that email is for external customers.</p>\n<p>I use <a href=\"https://www.opendns.com\">OpenDNS</a> to filter content and improve network speeds.</p>\n"}
